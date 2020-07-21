@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:follow/pages/drawer/homeDrawer.dart';
 import 'package:follow/pages/navigation/frinds.dart';
 import 'package:follow/pages/navigation/message.dart';
+import 'package:follow/utils/modalUtils.dart';
 
 class BottomNavigationBarPage extends StatefulWidget {
   BottomNavigationBarPage({Key key}) : super(key: key);
@@ -11,17 +13,22 @@ class BottomNavigationBarPage extends StatefulWidget {
 
 class _BottomNavigationBarPageState extends State<BottomNavigationBarPage> {
   final PageController _pageController = PageController();
+  final GlobalKey<ScaffoldState> _scaffoldkey = new GlobalKey<ScaffoldState>();
 
   int _currentIndex = 0;
 
   @override
   void initState() {
     super.initState();
+    ModalUtil.scaffoldkey = this._scaffoldkey;
   }
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
+      key: _scaffoldkey,
+      drawer: HomeDrawer(),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: this._currentIndex,
         onTap: (_index) {

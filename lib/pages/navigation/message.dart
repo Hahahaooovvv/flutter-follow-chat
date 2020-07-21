@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_redux/flutter_redux.dart';
+import 'package:follow/entity/apis/entityMemberApi.dart';
 import 'package:follow/pages/member/memberInfo.dart';
+import 'package:follow/redux.dart';
 import 'package:follow/utils/extensionUtil.dart';
+import 'package:follow/utils/modalUtils.dart';
 import 'package:follow/utils/routerUtil.dart';
 import 'package:follow/wiget/widgetAvatar.dart';
 
@@ -16,6 +20,13 @@ class _MessagePageState extends State<MessagePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: StoreConnector<ReduxStore, EntityMemberInfo>(
+            converter: (store) => store.state.memberInfo,
+            builder: (context, data) => IconButton(
+                icon: ClipOval(
+                  child: Image.network(data.avatar),
+                ),
+                onPressed: ModalUtil.openDrawer)),
         title: Text('最近消息'),
       ),
       body: ListView.separated(

@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:follow/apis/memberApi.dart';
 import 'package:follow/utils/extensionUtil.dart';
+import 'package:follow/utils/imageUtil.dart';
+import 'package:follow/utils/modalUtils.dart';
 import 'package:follow/wiget/widgetAvatar.dart';
+import 'package:follow/wiget/widgetInput.dart';
 
 class SignUpPage extends StatefulWidget {
   SignUpPage({Key key}) : super(key: key);
@@ -12,6 +17,32 @@ class SignUpPage extends StatefulWidget {
 class _SignUpPageState extends State<SignUpPage> {
   /// 性别
   int gender = 1;
+
+  String name = "陈晨";
+  String account = "";
+  String password = "";
+  bool aggress = false;
+  String avatar;
+
+  /// 获取默认头像
+  String getAvatar() {
+    return this.avatar ?? ["http://wechat-demo-zdc.oss-cn-chengdu.aliyuncs.com/male.jpg", "http://wechat-demo-zdc.oss-cn-chengdu.aliyuncs.com/female.jpg"][gender];
+  }
+
+  /// 注册
+  register() async {
+    if (account.length < 4) {
+      ModalUtil.toastMessage("请输入正确的账号");
+    } else if (password.length < 4) {
+      ModalUtil.toastMessage("请输入正确的密码");
+    } else if (name.isEmpty) {
+      ModalUtil.toastMessage("请输入正确的昵称");
+    } else {
+      if (await new MemberApi().userRegister(account, password, this.getAvatar(), name, gender)) {
+        Navigator.pop(context, account);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +58,15 @@ class _SignUpPageState extends State<SignUpPage> {
             alignment: Alignment.center,
             child: Stack(
               children: [
-                WidgetAvatar(url: null, size: 90),
+                WidgetAvatar(url: this.getAvatar(), size: 90).tapExtension(() {
+                  new ImageUtil().upLoadAvatar(context).then((value) {
+                    if (value != null) {
+                      this.setState(() {
+                        this.avatar = value;
+                      });
+                    }
+                  });
+                }),
                 Container(
                   width: 90.setWidth(),
                   height: 110.setWidth(),
@@ -44,29 +83,35 @@ class _SignUpPageState extends State<SignUpPage> {
               ],
             ),
           ),
-          TextField(
-            decoration: InputDecoration(
-                contentPadding: EdgeInsets.all(16),
-                fillColor: Color.fromARGB(255, 245, 248, 249),
-                border: OutlineInputBorder(
-                  borderSide: BorderSide.none,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                prefixIcon: Icon(Icons.perm_identity),
-                hintText: "输入账号",
-                filled: true),
+          WidgetInput(
+            inputFormatters: [LengthLimitingTextInputFormatter(8)],
+            hintText: "设置昵称（例如：沙雕）",
+            prefixIcon: Icon(Icons.sentiment_neutral),
+            onChanged: (str) {
+              this.setState(() {
+                this.name = str;
+              });
+            },
           ).paddingExtension(16.setPaddingAll()),
-          TextField(
-            decoration: InputDecoration(
-                contentPadding: EdgeInsets.all(16),
-                fillColor: Color.fromARGB(255, 245, 248, 249),
-                border: OutlineInputBorder(
-                  borderSide: BorderSide.none,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                prefixIcon: Icon(Icons.lock_outline),
-                hintText: "输入密码",
-                filled: true),
+          WidgetInput(
+            inputFormatters: [LengthLimitingTextInputFormatter(12), WhitelistingTextInputFormatter(RegExp("[A-Za-z0-9]"))],
+            hintText: "输入账号",
+            prefixIcon: Icon(Icons.perm_identity),
+            onChanged: (str) {
+              this.setState(() {
+                this.account = str;
+              });
+            },
+          ).paddingExtension(EdgeInsets.fromLTRB(16.setWidth(), 0, 16.setWidth(), 16.setHeight())),
+          WidgetInput(
+            inputFormatters: [LengthLimitingTextInputFormatter(16), WhitelistingTextInputFormatter(RegExp("[A-Za-z0-9\.]"))],
+            hintText: "输入密码",
+            prefixIcon: Icon(Icons.lock_outline),
+            onChanged: (str) {
+              this.setState(() {
+                this.password = str;
+              });
+            },
           ).paddingExtension(EdgeInsets.fromLTRB(16.setWidth(), 0, 16.setWidth(), 16.setHeight())),
           Row(
             children: List<Widget>.generate(2, (index) {
@@ -111,7 +156,7 @@ class _SignUpPageState extends State<SignUpPage> {
           Align(
             alignment: Alignment.centerRight,
             child: FlatButton(
-              onPressed: () {},
+              onPressed: this.register,
               child: Container(
                 alignment: Alignment.center,
                 height: 36.setHeight(),
