@@ -1,5 +1,6 @@
 enum SharePreferencesKeys {
   USERINFO,
   USERLOGINID,
-  FRIEND_LIST
+  FRIEND_LIST,
+  USER_NOTICE,
 }

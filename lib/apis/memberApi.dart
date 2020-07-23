@@ -1,3 +1,4 @@
+import 'package:follow/entity/apis/entityFriendApi.dart';
 import 'package:follow/entity/apis/entityMemberApi.dart';
 import 'package:follow/utils/requestUtils.dart';
 
@@ -26,6 +27,22 @@ class MemberApi {
   Future<bool> settingNickName(String nickName) {
     return RequestHelper.request("/api/Member/nickname", RequestMethod.PUT, data: {"nickName": nickName}, errorTips: true, showLoading: true).then((value) {
       return value.data.success;
+    });
+  }
+
+  /// 获取所有消息
+  Future<List<EntityNoticeTemple>> getAllNotice(String start) {
+    return RequestHelper.request("/api/Member/notice", RequestMethod.GET, data: {"start": start}).then((value) {
+      List<EntityNoticeTemple> _list = [];
+      if (value.data.success) {
+        value.data.data.forEach((p) {
+          _list.add(EntityNoticeTemple.fromJson(p));
+        });
+      } else {
+        return null;
+      }
+
+      return _list;
     });
   }
 

@@ -8,7 +8,9 @@ class WidgetInput extends TextField {
     TextEditingController controller,
     List<TextInputFormatter> inputFormatters,
     Function(String value) onChanged,
+    bool obscureText: false,
   }) : super(
+          obscureText: obscureText,
           onChanged: onChanged,
           inputFormatters: inputFormatters,
           controller: controller,

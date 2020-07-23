@@ -127,7 +127,7 @@ class EntityFriendAddRec {
   String recId;
   String remark;
   String nickName;
-  bool isRead;
+  int isRead;
 
   EntityFriendAddRec({this.senderMemberId, this.isRead, this.avatar, this.receiveMemberId, this.lunchApply, this.message, this.status, this.createTime, this.recId, this.remark, this.nickName});
 
@@ -171,6 +171,7 @@ class EntityFriendListInfo {
   String memberId;
   String avatar;
   String localMemberId;
+  String subTitle;
 
   EntityFriendListInfo({this.localMemberId, this.id, this.recId, this.nickName, this.remark, this.createTime, this.memberId, this.avatar});
 
@@ -183,6 +184,7 @@ class EntityFriendListInfo {
     memberId = json['memberId'];
     avatar = json['avatar'];
     localMemberId = json["localMemberId"];
+    subTitle = json['subTitle'];
   }
 
   Map<String, dynamic> toJson() {
@@ -195,6 +197,7 @@ class EntityFriendListInfo {
     data['memberId'] = this.memberId;
     data['avatar'] = this.avatar;
     data['localMemberId'] = this.localMemberId;
+    data['subTitle'] = this.subTitle;
     return data;
   }
 }
@@ -204,4 +207,38 @@ class EntityFriendSplitChar<T> {
   final List<T> list;
 
   EntityFriendSplitChar(this.char, this.list);
+}
+
+class EntityNoticeTemple {
+  String senderId;
+  int type;
+  String receiveId;
+  Null groupId;
+  dynamic content;
+  String createTime;
+  int isRead;
+
+  EntityNoticeTemple({this.senderId, this.type, this.receiveId, this.groupId, this.content});
+
+  EntityNoticeTemple.fromJson(Map<String, dynamic> json) {
+    senderId = json['senderId'];
+    type = json['type'];
+    receiveId = json['receiveId'];
+    groupId = json['groupId'];
+    content = json['content'];
+    createTime = json['createTime'];
+    isRead = json["isRead"];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['senderId'] = this.senderId;
+    data['type'] = this.type;
+    data['receiveId'] = this.receiveId;
+    data['groupId'] = this.groupId;
+    data['content'] = this.content;
+    data["createTime"] = this.createTime;
+    data["isRead"] = this.isRead;
+    return data;
+  }
 }

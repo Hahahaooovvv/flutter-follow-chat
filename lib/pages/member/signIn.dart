@@ -2,9 +2,9 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:follow/bottomNavigationBar.dart';
 import 'package:follow/helper/memberHelper.dart';
 import 'package:follow/pages/member/signUp.dart';
+import 'package:follow/utils/commonUtil.dart';
 import 'package:follow/utils/extensionUtil.dart';
 import 'package:follow/utils/routerUtil.dart';
 import 'package:follow/wiget/widgetButton.dart';
@@ -31,13 +31,14 @@ class _SignInPageState extends State<SignInPage> {
   void initState() {
     super.initState();
     // 判断是否已经登录了
-    MemberHelper memberHelper = new MemberHelper();
-    memberHelper.getMemberInfoFromLocal().then((value) {
-      if (value != null) {
-        memberHelper.cacheMemberInfoToRedux(value);
-        RouterUtil.replace(context, BottomNavigationBarPage());
-      }
-    });
+    CommonUtil().initSystem(context);
+    // MemberHelper memberHelper = new MemberHelper();
+    // memberHelper.getMemberInfoFromLocal().then((value) {
+    //   if (value != null) {
+    //     memberHelper.cacheMemberInfoToRedux(value);
+    //     RouterUtil.replace(context, BottomNavigationBarPage());
+    //   }
+    // });
   }
 
   @override
@@ -56,6 +57,7 @@ class _SignInPageState extends State<SignInPage> {
               hintText: "请输入账号",
             ).paddingExtension(16.setPaddingAll()),
             WidgetInput(
+              obscureText: true,
               inputFormatters: [LengthLimitingTextInputFormatter(16), WhitelistingTextInputFormatter(RegExp("[A-Za-z0-9\.]"))],
               prefixIcon: Icon(Icons.lock_outline),
               controller: _passwordController,

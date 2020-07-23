@@ -9,7 +9,7 @@ import 'package:follow/utils/reduxUtil.dart';
 
 class FriendHelper {
   /// 获取好友列表
-  getFriendList() async {
+  Future<void> getFriendList() async {
     await new FriendApis().getFriendList().then((value) {
       if (value != null) {
         this.cacheFriendListToLocal(value);
@@ -19,14 +19,14 @@ class FriendHelper {
   }
 
   /// 缓存好友
-  cacheFriendListToLocal(List<EntityFriendListInfo> list) {
+  void cacheFriendListToLocal(List<EntityFriendListInfo> list) {
     CommonUtil.getSharedPreferencesInstance().then((value) {
       value.setStringList(SharePreferencesKeys.FRIEND_LIST.toString(), list.map((e) => json.encode(e.toJson())).toList());
     });
   }
 
   /// 缓存好友到redux
-  cacheFriendListToRedux(List<EntityFriendListInfo> list) {
+  void cacheFriendListToRedux(List<EntityFriendListInfo> list) {
     ReduxUtil.dispatch(ReduxActions.FRIEND_LIST, list);
   }
 }

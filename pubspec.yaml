@@ -40,6 +40,8 @@ dependencies:
   image_picker: 0.6.5+2
   badges: ^1.1.1
   flutter_swiper: 1.1.6
+  flutter_easyrefresh: ^2.1.1
+  web_socket_channel: 1.1.0
 
 dev_dependencies:
   flutter_test:

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:follow/wiget/widgetInput.dart';
   
 class MemberSettingPage extends StatefulWidget {
   MemberSettingPage({Key key}) : super(key: key);
