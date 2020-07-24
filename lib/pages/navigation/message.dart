@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:follow/entity/notice/messageEntity.dart';
 import 'package:follow/helper/friendHelper.dart';
+import 'package:follow/pages/common/chatRoomCommon.dart';
 import 'package:follow/redux.dart';
 import 'package:follow/utils/extensionUtil.dart';
+import 'package:follow/utils/routerUtil.dart';
 import 'package:follow/wiget/widgetAppbar.dart';
 import 'package:follow/wiget/widgetAvatar.dart';
+import 'package:follow/wiget/widgetBadge.dart';
 
 class MessagePage extends StatefulWidget {
   MessagePage({Key key}) : super(key: key);
@@ -14,7 +17,7 @@ class MessagePage extends StatefulWidget {
   _MessagePageState createState() => _MessagePageState();
 }
 
-class _MessagePageState extends State<MessagePage> {
+class _MessagePageState extends State<MessagePage> with AutomaticKeepAliveClientMixin {
   @override
   void initState() {
     super.initState();
@@ -35,7 +38,12 @@ class _MessagePageState extends State<MessagePage> {
                 item.sort((a1, a2) => DateTime.parse(a2.senderTime).millisecondsSinceEpoch.compareTo(DateTime.parse(a1.senderTime).millisecondsSinceEpoch));
                 return ListTile(
                   onTap: () {
-                    // RouterUtil.push(context, ChatRoomCommonPage());
+                    RouterUtil.push(
+                        context,
+                        ChatRoomCommonPage(
+                          sessionId: item[0].sessionId,
+                          isGroup: 0,
+                        ));
                   },
                   contentPadding: [8, 16].setPadding(),
                   leading: WidgetAvatar(
@@ -61,12 +69,8 @@ class _MessagePageState extends State<MessagePage> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ).flexExtension(),
-                      ClipOval(
-                        child: Container(
-                          width: 5,
-                          height: 5,
-                          color: Colors.red,
-                        ),
+                      WidgetBadge(
+                        noticeCount: item.length,
                       )
                     ],
                   ),
@@ -78,4 +82,7 @@ class _MessagePageState extends State<MessagePage> {
       ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

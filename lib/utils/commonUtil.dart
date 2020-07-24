@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:follow/bottomNavigationBar.dart';
 import 'package:follow/entity/apis/entityFriendApi.dart';
@@ -52,8 +54,23 @@ class CommonUtil {
       case 1:
         MessageUtil.handleSocketMsg(temple);
         break;
+      case 2:
+        MessageUtil.handleSocketMsgAck(temple);
+        break;
       default:
         break;
     }
+  }
+
+  static String randomString([length = 32]) {
+    String alphabet = 'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM';
+    int strlenght = length;
+
+    /// 生成的字符串固定长度
+    String left = '';
+    for (var i = 0; i < strlenght; i++) {
+      left = left + alphabet[Random().nextInt(alphabet.length)];
+    }
+    return left;
   }
 }

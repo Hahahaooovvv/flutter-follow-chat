@@ -1,8 +1,14 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_redux/flutter_redux.dart';
 import 'package:follow/entity/apis/entityFriendApi.dart';
+import 'package:follow/entity/notice/messageEntity.dart';
+import 'package:follow/helper/friendHelper.dart';
+import 'package:follow/redux.dart';
+import 'package:follow/utils/commonUtil.dart';
 import 'package:follow/utils/extensionUtil.dart';
+import 'package:follow/utils/messageUtil.dart';
 import 'package:follow/utils/reduxUtil.dart';
 import 'package:follow/utils/socketUtil.dart';
 import 'package:follow/wiget/chat/widgetChatInput.dart';
@@ -25,28 +31,35 @@ class ChatRoomCommonPage extends StatefulWidget {
 }
 
 class _ChatRoomCommonPageState extends State<ChatRoomCommonPage> {
+  String nickName = "";
+  String avatar = "";
+  String ownAvatar = "";
+  String ownMemberId = "";
   @override
   void initState() {
     super.initState();
+    var memberInfo = FriendHelper.getFreindInfo(this.widget.sessionId);
+    this.nickName = memberInfo.nickName;
+    this.avatar = memberInfo.avatar;
+    this.ownAvatar = ReduxUtil.store.state.memberInfo.avatar;
+    this.ownMemberId = ReduxUtil.store.state.memberInfo.memberId;
   }
 
   void onSend(String message) {
+    var _content = {"msg": message, "msgType": 0, "localMsgId": CommonUtil.randomString(), "status": 0};
     var temple = EntityNoticeTemple(
-      type: 1,
-      senderId: ReduxUtil.store.state.memberInfo.memberId,
-      receiveId: "12321",
-      content: json.encode({"msg": message,"msgType":0}),
-      createTime: DateTime.now().toIso8601String(),
-      isRead: 0,
-    );
+      // 消息类型 单聊
+        type: 1,
 
-    //     String senderId;
-    // int type;
-    // String receiveId;
-    // String groupId;
-    // dynamic content;
-    // String createTime;
-    // int isRead;
+        /// 发送人
+        senderId: ReduxUtil.store.state.memberInfo.memberId,
+        receiveId: this.widget.sessionId,
+        createTime: DateTime.now().toIso8601String(),
+        isRead: 1,
+        content: _content);
+
+    MessageUtil.handleSocketMsg(temple);
+    temple.content = json.encode(_content);
     SocketUtil.webSocketInstance.add(json.encode(temple.toJson()));
   }
 
@@ -57,47 +70,30 @@ class _ChatRoomCommonPageState extends State<ChatRoomCommonPage> {
         title: Text('老憨批'),
         centerTitle: false,
       ),
-      body: Column(
-        children: <Widget>[
-          ListView(
-            padding: EdgeInsets.only(bottom: 16),
+      body: StoreConnector<ReduxStore, List<MessageEntity>>(
+        converter: (store) => store.state.messageList[this.widget.sessionId],
+        builder: (context, data) {
+          data.sort((a2, a1) => DateTime.parse(a2.senderTime).millisecondsSinceEpoch.compareTo(DateTime.parse(a1.senderTime).millisecondsSinceEpoch));
+          return Column(
             children: <Widget>[
-              WidgetChatMessageItem(
-                isOwn: false,
-              ),
-              WidgetChatMessageItem(
-                isOwn: true,
-              ),
-              WidgetChatMessageItem(
-                isOwn: true,
-              ),
-              WidgetChatMessageItem(
-                isOwn: true,
-              ),
-              WidgetChatMessageItem(
-                isOwn: false,
-              ),
-              WidgetChatMessageItem(
-                isOwn: false,
-              ),
-              WidgetChatMessageItem(
-                isOwn: false,
-              ),
-              WidgetChatMessageItem(
-                isOwn: false,
-              ),
-              WidgetChatMessageItem(
-                isOwn: false,
-              ),
-              WidgetChatMessageItem(
-                isOwn: false,
-              ),
+              ListView.separated(
+                separatorBuilder: (context, index) => Container(height: 2.setHeight()),
+                itemBuilder: (context, index) {
+                  return WidgetChatMessageItem(
+                    messageEntity: data[index],
+                    avatar: this.avatar,
+                    ownAvatar: this.ownAvatar,
+                  );
+                },
+                itemCount: data.length,
+                padding: EdgeInsets.only(bottom: 16),
+              ).flexExtension(),
+              WidgetChatInputPage(
+                onSend: this.onSend,
+              )
             ],
-          ).flexExtension(),
-          WidgetChatInputPage(
-            onSend: this.onSend,
-          )
-        ],
+          );
+        },
       ),
     );
   }

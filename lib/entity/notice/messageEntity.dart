@@ -11,6 +11,7 @@ class MessageEntity {
   dynamic atMembers;
   int status;
   String msgId;
+  String localMsgId;
 }
 
 class ReduxMessageEntity {

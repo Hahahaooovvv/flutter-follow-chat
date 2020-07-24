@@ -13,7 +13,7 @@ class SqlLiteHelper {
       return this.database;
     }
     var databasesPath = await getDatabasesPath();
-    String path = databasesPath + "/chat1.db";
+    String path = databasesPath + "/chat2.db";
     Database database = await openDatabase(
       path,
       version: 1,
@@ -21,6 +21,7 @@ class SqlLiteHelper {
         // chat_type 0 好友单聊
         // msg_type 0 文本 1 图片 2 视屏  3 撤回消息
         // status 0未送达 1已送达
+        // local_msg_id 消息送达后，后端会给前端回执是否发送成功
         await db.execute('''
           CREATE TABLE chat_message (
             id INTEGER PRIMARY KEY AUTOINCREMENT, 
@@ -33,7 +34,8 @@ class SqlLiteHelper {
             msg TEXT,
             at_members TEXT,
             status INTEGER,
-            msgId TEXT
+            msgId TEXT,
+            local_msg_id TEXT
             )
           ''');
       },

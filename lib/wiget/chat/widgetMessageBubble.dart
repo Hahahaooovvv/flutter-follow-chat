@@ -18,18 +18,17 @@ class WidgetMessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8),
-      child: CustomPaint(
-        child: Container(
-          alignment: Alignment.center,
-          padding: EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-          child: child ?? Container(),
-          constraints: BoxConstraints(minHeight: 50),
-          decoration: BoxDecoration(color: direction == WidgetMessageBubbleDirectionArrowType.left ? Colors.white : Color.fromARGB(255, 169, 232, 122), borderRadius: BorderRadius.circular(6)),
-        ).paddingExtension(EdgeInsets.symmetric(horizontal: 10)),
-        painter: WidgetMessageBubbleCanvas(this.direction, context),
-      ),
+    return CustomPaint(
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        child: child ?? Container(),
+        constraints: BoxConstraints(minHeight: 50, maxWidth: 1.sWidth() - 162),
+        decoration: BoxDecoration(
+          color: direction == WidgetMessageBubbleDirectionArrowType.left ? Colors.white : Color.fromARGB(255, 169, 232, 122),
+          borderRadius: BorderRadius.circular(6),
+        ),
+      ).paddingExtension(EdgeInsets.symmetric(horizontal: 10)),
+      painter: WidgetMessageBubbleCanvas(this.direction, context),
     );
   }
 }

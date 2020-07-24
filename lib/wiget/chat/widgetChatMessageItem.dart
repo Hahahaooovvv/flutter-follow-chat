@@ -1,26 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:follow/entity/notice/messageEntity.dart';
 import 'package:follow/utils/extensionUtil.dart';
+import 'package:follow/utils/reduxUtil.dart';
 import 'package:follow/wiget/chat/widgetMessageBubble.dart';
 import 'package:follow/wiget/widgetAvatar.dart';
 
 class WidgetChatMessageItem extends StatelessWidget {
-  WidgetChatMessageItem({Key key, this.isOwn: false}) : super(key: key);
-  final bool isOwn;
+  final String avatar;
+  final String ownAvatar;
+  WidgetChatMessageItem({
+    Key key,
+    @required this.messageEntity,
+    this.avatar,
+    this.ownAvatar,
+  }) : super(key: key);
+  final MessageEntity messageEntity;
 
   @override
   Widget build(BuildContext context) {
+    bool isOwn = messageEntity.senderId == ReduxUtil.store.state.memberInfo.memberId;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       textDirection: isOwn ? TextDirection.rtl : TextDirection.ltr,
       children: <Widget>[
-        WidgetAvatar(url: null, size: 50),
-        Container(
-          alignment: Alignment.centerLeft,
-          child: WidgetMessageBubble(
-            direction: isOwn ? WidgetMessageBubbleDirectionArrowType.right : WidgetMessageBubbleDirectionArrowType.left,
-            child: Text("lk富士康酒副科级阿森纳打开肌肤"),
+        WidgetAvatar(url: isOwn ? avatar : ownAvatar, size: 50),
+        WidgetMessageBubble(
+          direction: isOwn ? WidgetMessageBubbleDirectionArrowType.right : WidgetMessageBubbleDirectionArrowType.left,
+          child: Text(
+            this.messageEntity.msg+" ${this.messageEntity.status}",
+            textAlign: TextAlign.left,
           ),
-        ).flexExtension(),
+        ),
         Container(width: 50),
       ],
     ).paddingExtension(EdgeInsets.fromLTRB(16, 16, 16, 0));

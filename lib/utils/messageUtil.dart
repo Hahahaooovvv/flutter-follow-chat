@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:follow/entity/apis/entityFriendApi.dart';
 import 'package:follow/entity/notice/messageEntity.dart';
 import 'package:follow/redux.dart';
@@ -8,11 +10,14 @@ import 'package:follow/utils/sqlLiteUtil.dart';
 
 class MessageUtil {
   static SqlTemple getSocketMsgSqlStr(EntityNoticeTemple temple) {
-    String str = "insert into chat_message(sender_id,session_id,chat_type,is_read,sender_time,msg_type,msg,at_members,status,msgId) values(?,?,?,?,?,?,?,?,?,?)";
+    String str = "insert into chat_message(sender_id,session_id,chat_type,is_read,sender_time,msg_type,msg,at_members,status,msgId,local_msg_id) values(?,?,?,?,?,?,?,?,?,?,?)";
+    if (temple.content is String) {
+      temple.content = json.decode(temple.content);
+    }
     Map<dynamic, dynamic> _map = temple.content;
     return SqlTemple()
       ..sqlStr = str
-      ..dataList = [temple.senderId, getSessionId(temple.senderId, temple.receiveId), temple.type, 0, temple.createTime, _map['msgType'], _map['msg'], null, 1, _map["msgId"]];
+      ..dataList = [temple.senderId, getSessionId(temple.senderId, temple.receiveId), temple.type, 0, temple.createTime, _map['msgType'], _map['msg'], null, 1, _map["msgId"], _map['localMsgId']];
   }
 
   static getSessionId(String senderId, String receiveId) {
@@ -20,6 +25,21 @@ class MessageUtil {
       return receiveId;
     } else {
       return senderId;
+    }
+  }
+
+  static void handleSocketMsgAck(EntityNoticeTemple temple) async {
+    SqlLiteHelper sqlLiteHelper = new SqlLiteHelper();
+    await sqlLiteHelper.openDataBase();
+    String strSql = "update chat_message set status=? where local_msg_id=?";
+    await sqlLiteHelper.database.rawUpdate(strSql, [temple.content['status'], temple.content["localMsgId"]]);
+    sqlLiteHelper.closeDataBase();
+    Map<String, List<MessageEntity>> data = ReduxUtil.store.state.messageList;
+    var list = data[temple.senderId];
+    var find = list.firstWhere((element) => element.localMsgId == temple.content['localMsgId'], orElse: () => null);
+    if (find != null) {
+      find.status = temple.content['status'];
+      ReduxUtil.dispatch(ReduxActions.MESSAGE_LIST, data);
     }
   }
 
@@ -31,8 +51,11 @@ class MessageUtil {
     SqlTemple sqlTemple = MessageUtil.getSocketMsgSqlStr(temple);
     await sqlLiteHelper.database.rawInsert(sqlTemple.sqlStr, sqlTemple.dataList);
     sqlLiteHelper.closeDataBase();
-    // 开始回执已收到
-    SocketUtil.webSocketInstance.add(EntityNoticeTemple(content: _map['offlineId'], type: 2, isRead: 0, createTime: DateTime.now().toIso8601String()).toJson().jsonEncode());
+    bool isSender = temple.senderId == ReduxUtil.store.state.memberInfo.memberId;
+    // 开始回执已收到  如果不是自己发送的
+    if (!isSender) {
+      SocketUtil.webSocketInstance.add(EntityNoticeTemple(content: _map['offlineId'], type: 2, isRead: 0, createTime: DateTime.now().toIso8601String()).toJson().jsonEncode());
+    }
     Map<String, List<MessageEntity>> data = ReduxUtil.store.state.messageList;
     MessageEntity entity = MessageEntity()
       ..senderId = temple.senderId
@@ -43,12 +66,13 @@ class MessageUtil {
       ..msgType = _map['msgType']
       ..msg = _map['msg']
       ..atMembers = _map['atMembers']
-      ..status = 1
+      ..status = isSender ? 0 : 1
+      ..localMsgId = _map['localMsgId']
       ..msgId = _map["msgId"];
-    if (data[temple.receiveId] != null) {
-      data[temple.receiveId].add(entity);
+    if (data[getSessionId(temple.senderId, temple.receiveId)] != null) {
+      data[getSessionId(temple.senderId, temple.receiveId)].add(entity);
     } else {
-      data[temple.receiveId] = <MessageEntity>[entity];
+      data[getSessionId(temple.senderId, temple.receiveId)] = <MessageEntity>[entity];
     }
     ReduxUtil.dispatch(ReduxActions.MESSAGE_LIST, data);
   }
@@ -73,10 +97,10 @@ class MessageUtil {
         ..atMembers = element['at_members']
         ..status = element['status']
         ..msgId = element['msgId'];
-      if (_map['session_id'] != null) {
-        _map['session_id'].add(entity);
+      if (_map[element['session_id']] != null) {
+        _map[element['session_id']].add(entity);
       } else {
-        _map['session_id'] = [entity];
+        _map[element['session_id']] = [entity];
       }
     });
     ReduxUtil.dispatch(ReduxActions.MESSAGE_LIST, _map);
