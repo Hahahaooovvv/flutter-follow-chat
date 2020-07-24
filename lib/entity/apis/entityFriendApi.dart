@@ -213,12 +213,12 @@ class EntityNoticeTemple {
   String senderId;
   int type;
   String receiveId;
-  Null groupId;
+  String groupId;
   dynamic content;
   String createTime;
   int isRead;
 
-  EntityNoticeTemple({this.senderId, this.type, this.receiveId, this.groupId, this.content});
+  EntityNoticeTemple({this.senderId, this.type, this.receiveId, this.groupId, this.content, this.createTime, this.isRead});
 
   EntityNoticeTemple.fromJson(Map<String, dynamic> json) {
     senderId = json['senderId'];

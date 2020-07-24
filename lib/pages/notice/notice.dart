@@ -4,7 +4,6 @@ import 'package:flutter_redux/flutter_redux.dart';
 import 'package:follow/entity/apis/entityFriendApi.dart';
 import 'package:follow/helper/noticeHelper.dart';
 import 'package:follow/redux.dart';
-import 'package:follow/utils/commonUtil.dart';
 import 'package:follow/utils/extensionUtil.dart';
 import 'package:follow/utils/modalUtils.dart';
 import 'package:follow/wiget/widgetAvatar.dart';

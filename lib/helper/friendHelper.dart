@@ -29,4 +29,9 @@ class FriendHelper {
   void cacheFriendListToRedux(List<EntityFriendListInfo> list) {
     ReduxUtil.dispatch(ReduxActions.FRIEND_LIST, list);
   }
+
+  /// 获取好友信息
+  static EntityFriendListInfo getFreindInfo(String memberId, [List<EntityFriendListInfo> list]) {
+    return ReduxUtil.store.state.friendList.firstWhere((element) => element.memberId == memberId, orElse: () => null);
+  }
 }

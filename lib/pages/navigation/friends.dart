@@ -6,7 +6,6 @@ import 'package:follow/pages/member/memberInfo.dart';
 import 'package:follow/redux.dart';
 import 'package:follow/utils/extensionUtil.dart';
 import 'package:follow/utils/routerUtil.dart';
-import 'package:follow/utils/socketUtil.dart';
 import 'package:follow/wiget/widgetAppbar.dart';
 import 'package:follow/wiget/widgetAvatar.dart';
 import 'package:follow/wiget/widgetRefresh.dart';

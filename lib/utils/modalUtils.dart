@@ -4,8 +4,6 @@ import 'package:follow/apis/friendApis.dart';
 import 'package:follow/entity/apis/entityFriendApi.dart';
 import 'package:follow/helper/friendHelper.dart';
 import 'package:follow/helper/noticeHelper.dart';
-import 'package:follow/pages/member/memberInfo.dart';
-import 'package:follow/utils/routerUtil.dart';
 import 'package:follow/wiget/widgetPopSelectModal.dart';
 
 class ModalUtil {
@@ -96,7 +94,6 @@ class ModalUtil {
           label: "处理",
           onPressed: () => ModalUtil().ackFriendRequestDioag,
         ));
-    ;
   }
 
   ackFriendRequestDioag(BuildContext _context, EntityFriendAddRec friendAddRec) {

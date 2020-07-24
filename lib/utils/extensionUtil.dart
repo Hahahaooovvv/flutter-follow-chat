@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/screenutil.dart';
@@ -93,6 +95,12 @@ extension ListExtensionUtil on List {
       (index) => _oldList[index],
       growable: true,
     );
+  }
+}
+
+extension MapExtensionUtils on Map {
+  String jsonEncode() {
+    return json.encode(this);
   }
 }
 

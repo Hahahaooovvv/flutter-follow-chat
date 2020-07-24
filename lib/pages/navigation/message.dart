@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:follow/pages/member/memberInfo.dart';
-import 'package:follow/utils/commonUtil.dart';
+import 'package:flutter_redux/flutter_redux.dart';
+import 'package:follow/entity/notice/messageEntity.dart';
+import 'package:follow/helper/friendHelper.dart';
+import 'package:follow/redux.dart';
 import 'package:follow/utils/extensionUtil.dart';
-import 'package:follow/utils/modalUtils.dart';
-import 'package:follow/utils/routerUtil.dart';
 import 'package:follow/wiget/widgetAppbar.dart';
 import 'package:follow/wiget/widgetAvatar.dart';
 
@@ -24,50 +24,58 @@ class _MessagePageState extends State<MessagePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: WidgetAppbar(title: Text("最近消息")),
-      body: ListView.separated(
-          padding: EdgeInsets.zero,
-          itemBuilder: (context, item) {
-            return ListTile(
-              onTap: () {
-                RouterUtil.push(context, MemnerInfoPage());
-              },
-              contentPadding: [8, 16].setPadding(),
-              leading: WidgetAvatar(
-                url: null,
-                size: 40.setWidth(),
-              ),
-              title: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text("Judy West"),
-                  Text(
-                    "3小时前",
-                    style: TextStyle(fontSize: 12.setSp(), color: Theme.of(context).textTheme.bodyText1.color.withAlpha(150)),
+      body: StoreConnector<ReduxStore, Map<String, List<MessageEntity>>>(
+        converter: (store) => store.state.messageList,
+        builder: (context, data) {
+          return ListView.separated(
+              padding: EdgeInsets.zero,
+              itemBuilder: (context, index) {
+                var item = data[data.keys.toList()[index]];
+                var memberInfo = FriendHelper.getFreindInfo(item[0].sessionId);
+                item.sort((a1, a2) => DateTime.parse(a2.senderTime).millisecondsSinceEpoch.compareTo(DateTime.parse(a1.senderTime).millisecondsSinceEpoch));
+                return ListTile(
+                  onTap: () {
+                    // RouterUtil.push(context, ChatRoomCommonPage());
+                  },
+                  contentPadding: [8, 16].setPadding(),
+                  leading: WidgetAvatar(
+                    url: memberInfo?.avatar ?? null,
+                    size: 40.setWidth(),
                   ),
-                ],
-              ),
-              subtitle: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "Actress AspirantActress AspirantActress AspirantActress AspirantActress Aspirant",
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ).flexExtension(),
-                  ClipOval(
-                    child: Container(
-                      width: 5,
-                      height: 5,
-                      color: Colors.red,
-                    ),
-                  )
-                ],
-              ),
-            );
-          },
-          separatorBuilder: (context, item) => Divider(),
-          itemCount: 10),
+                  title: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(memberInfo?.remark ?? memberInfo?.nickName ?? ""),
+                      Text(
+                        item[0].senderTime,
+                        style: TextStyle(fontSize: 12.setSp(), color: Theme.of(context).textTheme.bodyText1.color.withAlpha(150)),
+                      ),
+                    ],
+                  ),
+                  subtitle: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        item[0].msg,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ).flexExtension(),
+                      ClipOval(
+                        child: Container(
+                          width: 5,
+                          height: 5,
+                          color: Colors.red,
+                        ),
+                      )
+                    ],
+                  ),
+                );
+              },
+              separatorBuilder: (context, item) => Divider(),
+              itemCount: data.length);
+        },
+      ),
     );
   }
 }

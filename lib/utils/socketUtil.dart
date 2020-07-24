@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:follow/entity/apis/entityFriendApi.dart';
 import 'package:follow/helper/noticeHelper.dart';
 import 'package:follow/utils/commonUtil.dart';
-import 'package:follow/utils/modalUtils.dart';
 import 'package:follow/utils/reduxUtil.dart';
 
 enum NoticeTypeEnum {
@@ -18,7 +17,7 @@ class SocketUtil {
 
   /// 初始化websocket
   static initSocket(BuildContext context) async {
-    WebSocket.connect("ws://localhost:5000?sid=${ReduxUtil.store.state.memberInfo.memberId}&platform=0").then((value) {
+    WebSocket.connect("ws://localhost:5000?sid=${ReduxUtil.store.state.memberInfo.memberId}&platform=${Platform.isAndroid ? 0 : 1}").then((value) {
       webSocketInstance = value;
       mStream = webSocketInstance.asBroadcastStream();
       print("链接成功");
@@ -26,8 +25,12 @@ class SocketUtil {
         // 刷新通知栏
         NoticeHelper().refreshNotice();
         EntityNoticeTemple temple = EntityNoticeTemple.fromJson(json.decode(event));
+        print(event);
         CommonUtil.noticeTempleHandle(temple, context);
       });
     });
   }
+
+
+  
 }

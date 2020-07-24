@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <input id="msg" />
+    <button id="test">
+        测试消息
+    </button>
+    <script>
+        // 打开一个 web socket
+        var ws = new WebSocket("ws://localhost:5000?sid=822a2cfbbcaf41dbb27fafac46e9dc38&platform=0");
+        ws.onopen = function () {
+            console.log("数据连接上");
+            // Web Socket 已连接上，使用 send() 方法发送数据
+            // ws.send("发送数据");
+        };
+
+        ws.onmessage = function (evt) {
+            var received_msg = evt.data;
+        };
+
+        ws.onclose = function () {
+            // 关闭 websocket
+            console.log("关闭了")
+        };
+
+        document.getElementById("test").onclick = () => {
+            console.log(document.getElementById('msg').value);
+            console.log(JSON.stringify({
+                type: 1,
+                senderId: "822a2cfbbcaf41dbb27fafac46e9dc38",
+                receiveId: "bd1b42342e484aa8bf6b60bead3736b2",
+                content: { "msg": "emmmm", "msgType": 0 },
+                createTime: new Date(),
+                isRead: 0,
+            }))
+            ws.send(
+                JSON.stringify({
+                    type: 1,
+                    senderId: "822a2cfbbcaf41dbb27fafac46e9dc38",
+                    receiveId: "bd1b42342e484aa8bf6b60bead3736b2",
+                    content: { "msg": document.getElementById('msg').value, "msgType": 0 },
+                    createTime: new Date(),
+                    isRead: 0,
+                })
+            )
+            document.getElementById('msg').value = ""
+        }
+
+    </script>
+</body>
+
+</html>

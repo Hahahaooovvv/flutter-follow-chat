@@ -4,6 +4,7 @@ import 'package:follow/entity/apis/entityFriendApi.dart';
 import 'package:follow/helper/friendHelper.dart';
 import 'package:follow/helper/memberHelper.dart';
 import 'package:follow/helper/noticeHelper.dart';
+import 'package:follow/utils/messageUtil.dart';
 import 'package:follow/utils/modalUtils.dart';
 import 'package:follow/utils/routerUtil.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -20,6 +21,7 @@ class CommonUtil {
         NoticeHelper().refreshNotice();
         // 初始化好友通知
         FriendHelper().getFriendList();
+        MessageUtil.cacheToRedux();
 
         RouterUtil.replace(context, BottomNavigationBarPage());
       }
@@ -46,6 +48,9 @@ class CommonUtil {
     switch (temple.type) {
       case 0:
         ModalUtil().ackFriendRequest(context, temple);
+        break;
+      case 1:
+        MessageUtil.handleSocketMsg(temple);
         break;
       default:
         break;
