@@ -27,7 +27,13 @@ class _AddFriendsPageState extends State<AddFriendsPage> {
       appBar: AppBar(
         title: Text('申请添加好友'),
         actions: [
-          FlatButton(onPressed: () {}, child: Text("发送请求"), textColor: Colors.white),
+          FlatButton(
+              onPressed: () async {
+                await FriendApis().apply(this.widget.memberId, this.message ?? "你好，我是" + ReduxUtil.store.state.memberInfo.nickName, this.remark, 0);
+                Navigator.pop(context);
+              },
+              child: Text("发送请求"),
+              textColor: Colors.white),
         ],
       ),
       body: Container(

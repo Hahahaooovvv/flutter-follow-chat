@@ -1,3 +1,4 @@
+import 'package:follow/utils/reduxUtil.dart';
 import 'package:sqflite/sqflite.dart';
 
 class SqlTemple {
@@ -13,7 +14,7 @@ class SqlLiteHelper {
       return this.database;
     }
     var databasesPath = await getDatabasesPath();
-    String path = databasesPath + "/chat2.db";
+    String path = databasesPath + "/chat_${ReduxUtil.store.state.memberInfo.memberId}.db";
     Database database = await openDatabase(
       path,
       version: 1,

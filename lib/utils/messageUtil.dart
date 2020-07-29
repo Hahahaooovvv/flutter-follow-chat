@@ -1,23 +1,105 @@
 import 'dart:convert';
-
+import 'package:flutter/material.dart';
+import 'package:follow/apis/memberApi.dart';
 import 'package:follow/entity/apis/entityFriendApi.dart';
 import 'package:follow/entity/notice/messageEntity.dart';
+import 'package:follow/helper/friendHelper.dart';
+import 'package:follow/helper/noticeHelper.dart';
+import 'package:follow/pages/common/chatRoomCommon.dart';
 import 'package:follow/redux.dart';
+import 'package:follow/utils/commonUtil.dart';
 import 'package:follow/utils/extensionUtil.dart';
 import 'package:follow/utils/reduxUtil.dart';
+import 'package:follow/utils/routerUtil.dart';
 import 'package:follow/utils/socketUtil.dart';
 import 'package:follow/utils/sqlLiteUtil.dart';
 
 class MessageUtil {
+  /// 开始聊天
+  startSession(BuildContext context, String sessionId, bool isGroup) async {
+    // 未读便已读
+    SqlLiteHelper sqlLiteHelper = new SqlLiteHelper();
+    Map<String, List<MessageEntity>> data = ReduxUtil.store.state.messageList;
+    await sqlLiteHelper.openDataBase();
+    String strSql = "update chat_message set is_read=1 where session_id=?;";
+    await sqlLiteHelper.database.rawUpdate(strSql, [sessionId]);
+    sqlLiteHelper.closeDataBase();
+    if (data[sessionId] != null) {
+      data[sessionId] = data[sessionId].map((e) {
+        e.isRead = 1;
+        return e;
+      }).toList();
+    }
+    ReduxUtil.dispatch(ReduxActions.MESSAGE_LIST, data);
+    MemberApi().isRead(sessionId);
+    this.getOfflineMessage(sessionId);
+    // 前往
+    RouterUtil.push(
+        context,
+        ChatRoomCommonPage(
+          sessionId: sessionId,
+          isGroup: isGroup ? 1 : 0,
+        ));
+  }
+
+  /// 获取历史未读消息
+  getOfflineMessage([String sessionId]) {
+    MemberApi().getOfflineChatMessage(sessionId).then((value) {
+      if (value.length == 0) {
+        return;
+      }
+      this.handleSocketMsgList(value);
+    });
+  }
+
   static SqlTemple getSocketMsgSqlStr(EntityNoticeTemple temple) {
-    String str = "insert into chat_message(sender_id,session_id,chat_type,is_read,sender_time,msg_type,msg,at_members,status,msgId,local_msg_id) values(?,?,?,?,?,?,?,?,?,?,?)";
+    String str = "insert into chat_message(sender_id,session_id,chat_type,is_read,sender_time,msg_type,msg,at_members,status,msgId,local_msg_id) values(?,?,?,?,?,?,?,?,?,?,?);";
     if (temple.content is String) {
       temple.content = json.decode(temple.content);
     }
     Map<dynamic, dynamic> _map = temple.content;
     return SqlTemple()
       ..sqlStr = str
-      ..dataList = [temple.senderId, getSessionId(temple.senderId, temple.receiveId), temple.type, 0, temple.createTime, _map['msgType'], _map['msg'], null, 1, _map["msgId"], _map['localMsgId']];
+      ..dataList = [
+        temple.senderId,
+        getSessionId(temple.senderId, temple.receiveId),
+        temple.type,
+        _map['isRead'] ?? 0,
+        temple.createTime,
+        _map['msgType'],
+        _map['msg'],
+        null,
+        1,
+        _map['msgId'] ?? _map["recId"],
+        _map['localMsgId']
+      ];
+  }
+
+  /// 回复的好友添加消息
+  handleFriendRequestAck(EntityNoticeTemple temple) {
+    NoticeHelper().refreshNotice();
+    EntityFriendAddRec friendAddRec = EntityFriendAddRec.fromJson(temple.content);
+    String _status = "";
+    if (friendAddRec.status == 2) {
+      _status = "通过";
+      FriendHelper().getFriendList();
+    } else {
+      _status = "拒绝";
+    }
+    // ignore: unnecessary_brace_in_string_interps
+    String msg = "${friendAddRec.remark ?? friendAddRec.nickName}${_status}了你的好友请求";
+    CommonUtil.oneContext.showSnackBar(builder: (_context) {
+      return SnackBar(
+          content: Text(msg),
+          action: friendAddRec.status == 2
+              ? SnackBarAction(
+                  label: "发起聊天",
+                  onPressed: () {
+                    return MessageUtil().startSession(CommonUtil.oneContext.context, temple.senderId, false);
+                  })
+              : null
+              );
+    });
   }
 
   static getSessionId(String senderId, String receiveId) {
@@ -30,11 +112,11 @@ class MessageUtil {
 
   static void handleSocketMsgAck(EntityNoticeTemple temple) async {
     SqlLiteHelper sqlLiteHelper = new SqlLiteHelper();
+    Map<String, List<MessageEntity>> data = ReduxUtil.store.state.messageList;
     await sqlLiteHelper.openDataBase();
-    String strSql = "update chat_message set status=? where local_msg_id=?";
+    String strSql = "update chat_message set status=? where local_msg_id=?;";
     await sqlLiteHelper.database.rawUpdate(strSql, [temple.content['status'], temple.content["localMsgId"]]);
     sqlLiteHelper.closeDataBase();
-    Map<String, List<MessageEntity>> data = ReduxUtil.store.state.messageList;
     var list = data[temple.senderId];
     var find = list.firstWhere((element) => element.localMsgId == temple.content['localMsgId'], orElse: () => null);
     if (find != null) {
@@ -43,8 +125,55 @@ class MessageUtil {
     }
   }
 
+  /// 处理多条消息
+  Future<void> handleSocketMsgList(List<EntityNoticeTemple> temples) async {
+    // Map<dynamic, dynamic> _map = temple.content;
+    SqlLiteHelper sqlLiteHelper = new SqlLiteHelper();
+    await sqlLiteHelper.openDataBase();
+    String strSql = "";
+    Map<String, List<MessageEntity>> data = ReduxUtil.store.state.messageList;
+    List<String> recIds = [];
+    List<dynamic> strDataList = [];
+    temples.forEach((e) {
+      var item = MessageUtil.getSocketMsgSqlStr(e);
+      strSql += item.sqlStr;
+      strDataList.addAll(item.dataList);
+      Map<dynamic, dynamic> _map = e.content;
+      recIds.add("'${_map['recId']}'");
+      bool isSender = e.senderId == ReduxUtil.store.state.memberInfo.memberId;
+      MessageEntity entity = MessageEntity()
+        ..senderId = e.senderId
+        ..sessionId = getSessionId(e.senderId, e.receiveId)
+        ..chatType = e.type
+        ..isRead = _map['isRead'] ?? 0
+        ..senderTime = e.createTime
+        ..msgType = _map['msgType']
+        ..msg = _map['msg']
+        ..atMembers = _map['atMembers']
+        ..status = isSender ? 0 : 1
+        ..localMsgId = _map['localMsgId']
+        ..msgId = _map['msgId'] ?? _map["recId"];
+      if (data[getSessionId(e.senderId, e.receiveId)] != null) {
+        if (!data[getSessionId(e.senderId, e.receiveId)].any((element) => element.msgId == (_map['msgId'] ?? _map["recId"]))) {
+          data[getSessionId(e.senderId, e.receiveId)].add(entity);
+        }
+      } else {
+        data[getSessionId(e.senderId, e.receiveId)] = <MessageEntity>[entity];
+      }
+    });
+    await sqlLiteHelper.database.rawDelete("delete from chat_message where msgId in(${recIds.join(',')})");
+    await sqlLiteHelper.database.rawInsert(strSql, strDataList);
+    sqlLiteHelper.closeDataBase();
+    ReduxUtil.dispatch(ReduxActions.MESSAGE_LIST, data);
+    // bool isSender = temple.senderId == ReduxUtil.store.state.memberInfo.memberId;
+    // // 开始回执已收到  如果不是自己发送的
+    // if (!isSender) {
+    //   SocketUtil.webSocketInstance.add(EntityNoticeTemple(content: _map['offlineId'], type: 2, isRead: 0, createTime: DateTime.now().toIso8601String()).toJson().jsonEncode());
+    // }
+  }
+
   /// 处理单条消息
-  static void handleSocketMsg(EntityNoticeTemple temple) async {
+  static Future<void> handleSocketMsg(EntityNoticeTemple temple) async {
     Map<dynamic, dynamic> _map = temple.content;
     SqlLiteHelper sqlLiteHelper = new SqlLiteHelper();
     await sqlLiteHelper.openDataBase();
@@ -61,14 +190,14 @@ class MessageUtil {
       ..senderId = temple.senderId
       ..sessionId = getSessionId(temple.senderId, temple.receiveId)
       ..chatType = temple.type
-      ..isRead = 0
+      ..isRead = _map["isRead"] ?? 0
       ..senderTime = temple.createTime
       ..msgType = _map['msgType']
       ..msg = _map['msg']
       ..atMembers = _map['atMembers']
       ..status = isSender ? 0 : 1
       ..localMsgId = _map['localMsgId']
-      ..msgId = _map["msgId"];
+      ..msgId = _map['msgId'] ?? _map["recId"];
     if (data[getSessionId(temple.senderId, temple.receiveId)] != null) {
       data[getSessionId(temple.senderId, temple.receiveId)].add(entity);
     } else {

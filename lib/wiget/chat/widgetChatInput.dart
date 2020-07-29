@@ -14,63 +14,43 @@ class WidgetChatInputPage extends StatefulWidget {
 
 class _WidgetChatInputPageState extends State<WidgetChatInputPage> with SingleTickerProviderStateMixin {
   String messageValue = "";
+  TextEditingController _textEditingController = TextEditingController();
 
-  Animation<double> animation;
-  AnimationController controller;
-
-  @override
-  void initState() {
-    super.initState();
-    controller = new AnimationController(duration: const Duration(milliseconds: 100), vsync: this);
-    animation = new Tween(begin: 0.0, end: 100.0).animate(controller)
-      ..addListener(() {
-        setState(() {
-          // the state that has changed here is the animation object’s value
-        });
-      });
-    // controller.forward();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    // controller.dispose();
+  void onSend() {
+    this.widget.onSend(this.messageValue);
+    this._textEditingController.text = "";
+    this.setState(() {
+      messageValue = "";
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.fromLTRB(16, 12, 16, max(12, MediaQuery.of(context).padding.bottom)),
+      padding: EdgeInsets.fromLTRB(16.setWidth(), 12.setHeight(), 16.setWidth(), max(12.setHeight(), MediaQuery.of(context).padding.bottom)),
       color: Color.fromARGB(255, 247, 247, 247),
       child: Row(
         children: <Widget>[
           TextField(
+            controller: this._textEditingController,
             onChanged: (str) {
-              if (str.isNotEmpty) {
-                controller.forward();
-              } else {
-                controller.reverse();
-              }
               setState(() {
                 this.messageValue = str;
               });
             },
-            decoration: InputDecoration(fillColor: Colors.white, filled: true, border: InputBorder.none),
-          ).flexExtension(),
-          Container(
-            alignment: Alignment.center,
+            decoration: InputDecoration(
+              labelStyle: TextStyle(fontSize: 12.setSp()),
+              fillColor: Colors.white,
+              filled: true,
+              border: InputBorder.none,
+              contentPadding: [0, 16].setPadding(),
+            ),
+          ).paddingExtension(EdgeInsets.only(right: 16.setWidth())).flexExtension(),
+          IconButton(
             color: Theme.of(context).primaryColor,
-            height: 48,
-            child: this.messageValue.isNotEmpty
-                ? Text(
-                    "发送",
-                    style: TextStyle(color: Colors.white, fontSize: 16),
-                  )
-                : Container(), // WidgetIcon("icon_appbar_add", size: 50),
-            width: animation.value,
-          ).paddingExtension(EdgeInsets.only(left: this.messageValue.isNotEmpty ? 0 : 16)).tapExtension(() {
-            this.widget.onSend(this.messageValue);
-          })
+            icon: Icon(Icons.send),
+            onPressed: this.messageValue.isEmpty ? null : this.onSend,
+          )
         ],
       ),
     );

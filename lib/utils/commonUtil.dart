@@ -9,24 +9,33 @@ import 'package:follow/helper/noticeHelper.dart';
 import 'package:follow/utils/messageUtil.dart';
 import 'package:follow/utils/modalUtils.dart';
 import 'package:follow/utils/routerUtil.dart';
+import 'package:one_context/one_context.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CommonUtil {
+  static OneContext get oneContext => _getContext();
+
+  /// 获取context
+  static OneContext _getContext() {
+    return OneContext();
+  }
+
   /// 初始化数据
   /// 每次进APP的时候在入口处调用
-  initSystem(BuildContext context) {
+  Future<bool> initSystem(BuildContext context) async {
     MemberHelper memberHelper = new MemberHelper();
-    memberHelper.getMemberInfoFromLocal().then((value) {
+    return memberHelper.getMemberInfoFromLocal().then((value) {
       if (value != null) {
         memberHelper.cacheMemberInfoToRedux(value);
         // 初始化通知
         NoticeHelper().refreshNotice();
+        FriendHelper().cacheToRedux();
         // 初始化好友通知
         FriendHelper().getFriendList();
         MessageUtil.cacheToRedux();
-
         RouterUtil.replace(context, BottomNavigationBarPage());
       }
+      return value == null ? false : true;
     });
   }
 
@@ -46,16 +55,26 @@ class CommonUtil {
   }
 
   /// 处理消息
-  static noticeTempleHandle(EntityNoticeTemple temple, BuildContext context) {
+  static noticeTempleHandle(EntityNoticeTemple temple) async {
     switch (temple.type) {
       case 0:
-        ModalUtil().ackFriendRequest(context, temple);
+        // 添加好友
+        ModalUtil().ackFriendRequest(temple);
         break;
       case 1:
+        // 发送消息过来了
         MessageUtil.handleSocketMsg(temple);
         break;
       case 2:
+        // 自己发送的消息 然后后端确认已经发送
         MessageUtil.handleSocketMsgAck(temple);
+        break;
+      case 3:
+        MessageUtil().handleFriendRequestAck(temple);
+        break;
+      //  被挤下线
+      case 4:
+        ModalUtil.isSignOut();
         break;
       default:
         break;

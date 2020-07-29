@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:follow/apis/friendApis.dart';
 import 'package:follow/apis/memberApi.dart';
@@ -7,8 +10,10 @@ import 'package:follow/pages/friend/addFriends.dart';
 import 'package:follow/utils/commonUtil.dart';
 import 'package:follow/utils/extensionUtil.dart';
 import 'package:follow/utils/imageUtil.dart';
+import 'package:follow/utils/messageUtil.dart';
 import 'package:follow/utils/reduxUtil.dart';
 import 'package:follow/utils/routerUtil.dart';
+import 'package:follow/utils/socketUtil.dart';
 import 'package:follow/wiget/widgetAvatar.dart';
 import 'package:follow/wiget/widgetButton.dart';
 
@@ -21,11 +26,24 @@ class MemnerInfoPage extends StatefulWidget {
 }
 
 class _MemnerInfoPageState extends State<MemnerInfoPage> {
+  StreamSubscription<dynamic> _subscription;
   EntityFriendSearch friendInfo;
   @override
   void initState() {
     super.initState();
     this.refreshData();
+    _subscription = SocketUtil.mStream.listen((event) {
+      EntityNoticeTemple temple = EntityNoticeTemple.fromJson(json.decode(event));
+      if (temple.type == 3 && temple.senderId == this.widget.memberId) {
+        this.refreshData();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _subscription.cancel();
   }
 
   refreshData() {
@@ -81,30 +99,72 @@ class _MemnerInfoPageState extends State<MemnerInfoPage> {
                         Text(this.friendInfo?.remark ?? this.friendInfo?.nickName ?? "", style: TextStyle(color: Colors.white, fontSize: 20.setSp()))
                             .paddingExtension(EdgeInsets.only(bottom: 8.setHeight())),
                         Text(this.friendInfo?.signature ?? "", style: TextStyle(color: Color(0XFFF7F7F7), fontSize: 14.setSp())).paddingExtension(EdgeInsets.only(bottom: 4.setHeight())),
-                        (!isMe && !(this.friendInfo?.isFriend ?? false))
-                            ? WidgetButton(
+                        isMe
+                            ? Container(height: 60.setHeight())
+                            : WidgetButton(
                                 type: WidgetButtonType.primary,
                                 filled: false,
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.add, color: Colors.white).paddingExtension(EdgeInsets.only(right: 4.setWidth())),
-                                    Text('添加好友'),
-                                  ],
-                                ),
+                                child: (this.friendInfo?.isFriend ?? false)
+                                    ? Text("发起聊天")
+                                    : Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                        children: [
+                                          Icon(Icons.add, color: Colors.white).paddingExtension(EdgeInsets.only(right: 4.setWidth())),
+                                          Text('添加好友'),
+                                        ],
+                                      ),
                                 onPressed: () {
-                                  RouterUtil.push(
-                                      context,
-                                      AddFriendsPage(
-                                        memberId: this.friendInfo.memberId,
-                                        name: this.friendInfo.nickName,
-                                      ));
+                                  if (!(this.friendInfo?.isFriend ?? false)) {
+                                    RouterUtil.push(
+                                        context,
+                                        AddFriendsPage(
+                                          memberId: this.friendInfo.memberId,
+                                          name: this.friendInfo.nickName,
+                                        ));
+                                  } else {
+                                    MessageUtil().startSession(context, this.widget.memberId, false);
+                                  }
                                 },
                                 width: 100.setWidth(),
-                              )
-                            : Container(height: 60.setSp()),
-
+                              ).paddingExtension(EdgeInsets.only(bottom: 40.setHeight()))
+                        // (!isMe && !(this.friendInfo?.isFriend ?? false))
+                        //     ? WidgetButton(
+                        //         type: WidgetButtonType.primary,
+                        //         filled: false,
+                        //         child: Row(
+                        //           mainAxisAlignment: MainAxisAlignment.center,
+                        //           crossAxisAlignment: CrossAxisAlignment.center,
+                        //           children: [
+                        //             Icon(Icons.add, color: Colors.white).paddingExtension(EdgeInsets.only(right: 4.setWidth())),
+                        //             Text('添加好友'),
+                        //           ],
+                        //         ),
+                        //         onPressed: () {
+                        //           RouterUtil.push(
+                        //               context,
+                        //               AddFriendsPage(
+                        //                 memberId: this.friendInfo.memberId,
+                        //                 name: this.friendInfo.nickName,
+                        //               ));
+                        //         },
+                        //         width: 100.setWidth(),
+                        //       )
+                        //     : Container(
+                        //         padding: EdgeInsets.only(bottom: 16.setHeight()),
+                        //         alignment: Alignment.center,
+                        //         child: WidgetButton(
+                        //           width: 100.setWidth(),
+                        //           filled: false,
+                        //           onPressed: () {
+                        //             MessageUtil().startSession(context, this.widget.memberId, false);
+                        //           },
+                        //           child: Row(
+                        //             mainAxisAlignment: MainAxisAlignment.center,
+                        //             children: [Text("发起聊天")],
+                        //           ),
+                        //         ),
+                        //       ),
                         // Row(
                         //   mainAxisAlignment: MainAxisAlignment.center,
                         //   children: List<Widget>.generate(5, (index) {
@@ -232,7 +292,7 @@ class _MemnerInfoPageState extends State<MemnerInfoPage> {
           ),
           AppBar(
             backgroundColor: Colors.transparent,
-            actions: [IconButton(icon: Icon(Icons.settings), onPressed: () {})],
+            // actions: [IconButton(icon: Icon(Icons.settings), onPressed: () {})],
           ).containerExtension(height: kToolbarHeight + MediaQuery.of(context).padding.top),
         ],
       ),

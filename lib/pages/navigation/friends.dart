@@ -19,6 +19,11 @@ class FrindsPage extends StatefulWidget {
 
 class _FrindsPageState extends State<FrindsPage> with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   @override
+  void initState() {
+    super.initState();
+    FriendHelper().getFriendList();
+  }
+  @override
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
@@ -29,7 +34,6 @@ class _FrindsPageState extends State<FrindsPage> with SingleTickerProviderStateM
         converter: (store) => store.state.friendList,
         builder: (context, data) {
           return WidgetRefresh(
-              firstRefresh: true,
               isScroll: false,
               method: () async {
                 await FriendHelper().getFriendList();
@@ -48,12 +52,12 @@ class _FrindsPageState extends State<FrindsPage> with SingleTickerProviderStateM
                         size: 40.setWidth(),
                       ),
                       title: Text(item.remark ?? item.nickName ?? "", style: TextStyle(fontSize: 16.setSp())),
-                      subtitle: Text(
-                        "[在线] ${item.subTitle ?? ""}",
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 14.setSp()),
-                      ),
+                      // subtitle: Text(
+                      //   "${item.subTitle ?? ""}",
+                      //   maxLines: 1,
+                      //   overflow: TextOverflow.ellipsis,
+                      //   style: TextStyle(fontSize: 14.setSp()),
+                      // ),
                     );
                   },
                   separatorBuilder: (context, item) => Divider(),

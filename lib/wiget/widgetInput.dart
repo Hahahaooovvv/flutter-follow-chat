@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 class WidgetInput extends TextField {
   WidgetInput({
+    bool autofocus: false,
     String hintText,
     Widget prefixIcon,
     TextEditingController controller,
@@ -10,6 +11,7 @@ class WidgetInput extends TextField {
     Function(String value) onChanged,
     bool obscureText: false,
   }) : super(
+          autofocus: autofocus,
           obscureText: obscureText,
           onChanged: onChanged,
           inputFormatters: inputFormatters,

@@ -45,18 +45,27 @@ class WidgetRefresh extends StatelessWidget {
               await this.method();
             },
       firstRefresh: this.firstRefresh,
-      // emptyWidget: this.empty ? WidgetEmptyComponent() : null,
-      firstRefreshWidget: Container(
-        child: Center(
-          child: CircularProgressIndicator(),
-        ),
-        color: Colors.white,
-      ),
+      emptyWidget: this.empty ? WidgetEmptyComponent() : null,
+      // firstRefreshWidget: Container(
+      //   child: Center(
+      //     child: CircularProgressIndicator(),
+      //   ),
+      //   color: Colors.white,
+      // ),
       child: this.isScroll
           ? SingleChildScrollView(
               child: this.child,
             )
           : this.child,
+    );
+  }
+}
+
+class WidgetEmptyComponent extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Text("暂无数据", style: Theme.of(context).textTheme.bodyText1),
     );
   }
 }

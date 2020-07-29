@@ -22,7 +22,7 @@ class WidgetMessageBubble extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 12, horizontal: 8),
         child: child ?? Container(),
-        constraints: BoxConstraints(minHeight: 50, maxWidth: 1.sWidth() - 162),
+        constraints: BoxConstraints( maxWidth: 1.sWidth() - 162),
         decoration: BoxDecoration(
           color: direction == WidgetMessageBubbleDirectionArrowType.left ? Colors.white : Color.fromARGB(255, 169, 232, 122),
           borderRadius: BorderRadius.circular(6),

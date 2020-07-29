@@ -89,17 +89,17 @@ class _HomeDrawerState extends State<HomeDrawer> {
                     ],
                   ),
                 ),
-                ListTile(
-                  title: Text("弗罗号"),
-                  leading: Icon(Icons.credit_card),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(memberInfo.followId, style: TextStyle(color: Color(0XFF999999))),
-                      Icon(Icons.chevron_right),
-                    ],
-                  ),
-                ),
+                // ListTile(
+                //   title: Text("弗罗号"),
+                //   leading: Icon(Icons.credit_card),
+                //   trailing: Row(
+                //     mainAxisSize: MainAxisSize.min,
+                //     children: [
+                //       Text(memberInfo.followId, style: TextStyle(color: Color(0XFF999999))),
+                //       Icon(Icons.chevron_right),
+                //     ],
+                //   ),
+                // ),
                 ListTile(
                   onTap: () {
                     ModalUtil.showPopSelect<String>(context, children: [

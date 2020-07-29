@@ -13,6 +13,10 @@ class RouterUtil extends PageRouteBuilder {
     Navigator.of(context).pushReplacement(RouterUtil(widget, type: type));
   }
 
+  static Future pushAndRemoveUntil(BuildContext context, Widget widget, [RouterAnimationType type]) {
+    return Navigator.of(context).pushReplacement(RouterUtil(widget, type: type));
+  }
+
   final Widget widget;
 
   @override

@@ -41,8 +41,28 @@ class MemberApi {
       } else {
         return null;
       }
-
       return _list;
+    });
+  }
+
+  /// 获取所有未读消息
+  Future<List<EntityNoticeTemple>> getOfflineChatMessage(String sessionId) {
+    return RequestHelper.request("/api/message/offline", RequestMethod.GET, data: {"sessionId": sessionId}).then((value) {
+      List<EntityNoticeTemple> _list = [];
+      if (value.data.success) {
+        value.data.data.forEach((p) {
+          _list.add(EntityNoticeTemple.fromJson(p));
+        });
+      } else {
+        return null;
+      }
+      return _list;
+    });
+  }
+
+  Future<bool> isRead(String sessionId) {
+    return RequestHelper.request("/api/message/read", RequestMethod.POST, data: {"sessionId": sessionId}).then((value) {
+      return value.data.success;
     });
   }
 

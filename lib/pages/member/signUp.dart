@@ -26,7 +26,7 @@ class _SignUpPageState extends State<SignUpPage> {
 
   /// 获取默认头像
   String getAvatar() {
-    return this.avatar ?? ["http://wechat-demo-zdc.oss-cn-chengdu.aliyuncs.com/male.jpg", "http://wechat-demo-zdc.oss-cn-chengdu.aliyuncs.com/female.jpg"][gender];
+    return this.avatar ?? ["http://followtest.zdcnb.com//male.jpg", "http://followtest.zdcnb.com//female.jpg"][gender];
   }
 
   /// 注册
@@ -94,7 +94,7 @@ class _SignUpPageState extends State<SignUpPage> {
             },
           ).paddingExtension(16.setPaddingAll()),
           WidgetInput(
-            inputFormatters: [LengthLimitingTextInputFormatter(12), WhitelistingTextInputFormatter(RegExp("[A-Za-z0-9]"))],
+            inputFormatters: [LengthLimitingTextInputFormatter(12),  FilteringTextInputFormatter.allow(RegExp("[A-Za-z0-9]"))],
             hintText: "输入账号",
             prefixIcon: Icon(Icons.perm_identity),
             onChanged: (str) {
@@ -104,7 +104,7 @@ class _SignUpPageState extends State<SignUpPage> {
             },
           ).paddingExtension(EdgeInsets.fromLTRB(16.setWidth(), 0, 16.setWidth(), 16.setHeight())),
           WidgetInput(
-            inputFormatters: [LengthLimitingTextInputFormatter(16), WhitelistingTextInputFormatter(RegExp("[A-Za-z0-9\.]"))],
+            inputFormatters: [LengthLimitingTextInputFormatter(16),  FilteringTextInputFormatter.allow(RegExp("[A-Za-z0-9\.]"))],
             hintText: "输入密码",
             prefixIcon: Icon(Icons.lock_outline),
             onChanged: (str) {

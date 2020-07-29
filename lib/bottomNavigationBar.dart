@@ -48,6 +48,7 @@ class _BottomNavigationBarPageState extends State<BottomNavigationBarPage> {
         ],
       ),
       body: PageView(
+        physics: NeverScrollableScrollPhysics(),
         controller: _pageController,
         children: [MessagePage(), FrindsPage()],
       ),

@@ -1,19 +1,24 @@
+import 'package:flustars/flustars.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_redux/flutter_redux.dart';
-import 'package:flutter_screenutil/screenutil.dart';
-import 'package:follow/pages/member/signIn.dart';
+import 'package:follow/Entrance.dart';
+import 'package:follow/config.dart';
 import 'package:follow/redux.dart';
 import 'package:follow/utils/extensionUtil.dart';
 import 'package:follow/utils/reduxUtil.dart';
 import 'package:follow/utils/requestUtils.dart';
+import 'package:one_context/one_context.dart';
 import 'package:redux/redux.dart';
 
 void main() {
-  ScreenUtil.init(width: 750, height: 1334, allowFontScaling: false);
+  // ScreenUtil.init(width: 750, height: 1334, allowFontScaling: false);
+  setDesignWHD(360.0, 640.0, density: 3);
   RequestHelper.initInstance();
   final store = new Store<ReduxStore>(iniReducer, initialState: ReduxStore());
+  // 初始化config
+  Config.instance;
   runApp(MyApp(store: store));
   SystemUiOverlayStyle systemUiOverlayStyle = SystemUiOverlayStyle(statusBarColor: Colors.transparent, statusBarBrightness: Brightness.dark);
   // if (Platform.isAndroid) {
@@ -43,10 +48,11 @@ class _MyAppState extends State<MyApp> {
         store: widget.store,
         child: FlutterEasyLoading(
             child: MaterialApp(
+          builder: OneContext().builder,
           title: 'Floow Chat',
           theme: ThemeData(
             textTheme: TextTheme(
-              bodyText1: TextStyle(color: Color(0XFF999999), fontSize: 15.setSp()),
+              bodyText1: TextStyle(color: Color(0XFF999999), fontSize: 15.setSp(), fontWeight: FontWeight.normal),
               bodyText2: TextStyle(color: Color(0XFF666666), fontSize: 15.setSp()),
             ),
             iconTheme: IconThemeData(color: Color(0XFF999999)),
@@ -62,7 +68,7 @@ class _MyAppState extends State<MyApp> {
             primaryColor: Color.fromARGB(255, 100, 142, 247),
             visualDensity: VisualDensity.adaptivePlatformDensity,
           ),
-          home: SignInPage(),
+          home: EntrancePage(),
         )));
   }
 }

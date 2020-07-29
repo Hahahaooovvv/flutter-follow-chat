@@ -13,7 +13,7 @@ class FriendHelper {
     await new FriendApis().getFriendList().then((value) {
       if (value != null) {
         this.cacheFriendListToLocal(value);
-        this.cacheFriendListToRedux(value);
+        this.cacheToRedux(value);
       }
     });
   }
@@ -25,9 +25,15 @@ class FriendHelper {
     });
   }
 
+  Future<List<EntityFriendListInfo>> getFriendListFromLocal() {
+    return CommonUtil.getSharedPreferencesInstance().then((value) {
+      return value.getStringList(SharePreferencesKeys.FRIEND_LIST.toString()).map((e) => EntityFriendListInfo.fromJson(json.decode(e))).toList();
+    });
+  }
+
   /// 缓存好友到redux
-  void cacheFriendListToRedux(List<EntityFriendListInfo> list) {
-    ReduxUtil.dispatch(ReduxActions.FRIEND_LIST, list);
+  void cacheToRedux([List<EntityFriendListInfo> list]) async {
+    ReduxUtil.dispatch(ReduxActions.FRIEND_LIST, list ?? (await this.getFriendListFromLocal()));
   }
 
   /// 获取好友信息

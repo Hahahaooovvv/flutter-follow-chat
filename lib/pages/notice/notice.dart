@@ -21,10 +21,16 @@ class _NoticePageState extends State<NoticePage> {
     switch (data.type) {
       case 0:
         EntityFriendAddRec friendAddRec = EntityFriendAddRec.fromJson(data.content);
-        ModalUtil().ackFriendRequestDioag(context, friendAddRec);
+        ModalUtil().ackFriendRequestDioag(friendAddRec);
         break;
       default:
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    NoticeHelper().refreshNotice();
   }
 
   @override
@@ -38,7 +44,7 @@ class _NoticePageState extends State<NoticePage> {
             converter: (store) => store.state.noticeList,
             builder: (context, data) {
               return WidgetRefresh(
-                  firstRefresh: true,
+                  empty: data.length == 0,
                   isScroll: false,
                   child: ListView.separated(
                     itemCount: data.length,

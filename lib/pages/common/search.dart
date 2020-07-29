@@ -23,6 +23,7 @@ class _SearchPageState extends State<SearchPage> {
       body: Column(
         children: [
           WidgetInput(
+            autofocus: true,
             onChanged: (str) {
               this.setState(() {
                 searchStr = str;

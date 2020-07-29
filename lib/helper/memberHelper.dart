@@ -1,16 +1,17 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:follow/Entrance.dart';
 import 'package:follow/apis/memberApi.dart';
 import 'package:follow/bottomNavigationBar.dart';
 import 'package:follow/entity/apis/entityMemberApi.dart';
 import 'package:follow/entity/enum/sharedPreferences.dart';
-import 'package:follow/pages/member/signIn.dart';
 import 'package:follow/redux.dart';
 import 'package:follow/utils/commonUtil.dart';
 import 'package:follow/utils/modalUtils.dart';
 import 'package:follow/utils/reduxUtil.dart';
 import 'package:follow/utils/routerUtil.dart';
+import 'package:follow/utils/socketUtil.dart';
 
 class MemberHelper {
   /// 用户登录
@@ -94,14 +95,15 @@ class MemberHelper {
   /// 退出登录
   Future<void> signOut(BuildContext context) async {
     await CommonUtil.getSharedPreferencesInstance().then((instance) async {
+      /// 跳转到登录页面
+      await RouterUtil.pushAndRemoveUntil(context, EntrancePage());
+
       /// 清除登录记录
       await instance.remove(SharePreferencesKeys.USERLOGINID.toString());
 
       /// 清除redux数据
+      new SocketUtil().close();
       this.cacheMemberInfoToRedux(null);
-
-      /// 跳转到登录页面
-      RouterUtil.replace(context, SignInPage());
     });
   }
 }

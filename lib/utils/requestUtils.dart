@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:follow/config.dart';
 import 'package:follow/utils/modalUtils.dart';
 import 'package:follow/utils/reduxUtil.dart';
 
@@ -50,7 +51,7 @@ class RequestHelper {
       options.headers["access-token"] = ReduxUtil.store.state.memberInfo?.token;
       options.contentType = Headers.formUrlEncodedContentType;
       options.responseType = ResponseType.json;
-      options.baseUrl = "http://localhost:5000";
+      options.baseUrl = Config.instance.apiUrlsConfig.main;
       return options;
     }, onResponse: (option) async {
       if (option.statusCode == HttpStatus.ok) {

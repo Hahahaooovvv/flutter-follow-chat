@@ -1,8 +1,8 @@
 import 'dart:convert';
 
+import 'package:flustars/flustars.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_screenutil/screenutil.dart';
 import 'package:follow/utils/commonUtil.dart';
 
 extension WidgetExtensionUtil on Widget {
@@ -107,22 +107,23 @@ extension MapExtensionUtils on Map {
 extension NumExtensionUtils on num {
   /// 适配宽度
   num setWidth() {
-    return ScreenUtil().setWidth(this * 2);
+    return ScreenUtil.getInstance().getAdapterSize(this.toDouble()).toDouble();
+    // return ScreenUtil().setWidth(this * 2);
   }
 
   /// 适配高度
   num setHeight() {
-    return ScreenUtil().setHeight(this * 2);
+    return ScreenUtil.getInstance().getAdapterSize(this.toDouble()).toDouble();
   }
 
   /// 适配字体
   num setSp() {
-    return ScreenUtil().setSp(this * 2, allowFontScalingSelf: false);
+    return ScreenUtil.getInstance().getAdapterSize(this.toDouble()).toDouble();
   }
 
   /// 设置为屏幕宽度的倍数
   num sWidth() {
-    return ScreenUtil.screenWidth * this;
+    return (ScreenUtil.getInstance().screenWidth * this.toDouble()).toDouble();
   }
 
   EdgeInsets setPaddingAll() {

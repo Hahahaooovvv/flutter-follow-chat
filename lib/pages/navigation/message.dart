@@ -1,14 +1,16 @@
+import 'package:flustars/flustars.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:follow/entity/notice/messageEntity.dart';
 import 'package:follow/helper/friendHelper.dart';
-import 'package:follow/pages/common/chatRoomCommon.dart';
 import 'package:follow/redux.dart';
 import 'package:follow/utils/extensionUtil.dart';
-import 'package:follow/utils/routerUtil.dart';
+import 'package:follow/utils/messageUtil.dart';
+import 'package:follow/utils/reduxUtil.dart';
 import 'package:follow/wiget/widgetAppbar.dart';
 import 'package:follow/wiget/widgetAvatar.dart';
 import 'package:follow/wiget/widgetBadge.dart';
+import 'package:follow/wiget/widgetRefresh.dart';
 
 class MessagePage extends StatefulWidget {
   MessagePage({Key key}) : super(key: key);
@@ -21,63 +23,71 @@ class _MessagePageState extends State<MessagePage> with AutomaticKeepAliveClient
   @override
   void initState() {
     super.initState();
+    MessageUtil().getOfflineMessage();
   }
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       appBar: WidgetAppbar(title: Text("最近消息")),
-      body: StoreConnector<ReduxStore, Map<String, List<MessageEntity>>>(
-        converter: (store) => store.state.messageList,
-        builder: (context, data) {
-          return ListView.separated(
-              padding: EdgeInsets.zero,
-              itemBuilder: (context, index) {
-                var item = data[data.keys.toList()[index]];
-                var memberInfo = FriendHelper.getFreindInfo(item[0].sessionId);
-                item.sort((a1, a2) => DateTime.parse(a2.senderTime).millisecondsSinceEpoch.compareTo(DateTime.parse(a1.senderTime).millisecondsSinceEpoch));
-                return ListTile(
-                  onTap: () {
-                    RouterUtil.push(
-                        context,
-                        ChatRoomCommonPage(
-                          sessionId: item[0].sessionId,
-                          isGroup: 0,
-                        ));
-                  },
-                  contentPadding: [8, 16].setPadding(),
-                  leading: WidgetAvatar(
-                    url: memberInfo?.avatar ?? null,
-                    size: 40.setWidth(),
-                  ),
-                  title: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(memberInfo?.remark ?? memberInfo?.nickName ?? ""),
-                      Text(
-                        item[0].senderTime,
-                        style: TextStyle(fontSize: 12.setSp(), color: Theme.of(context).textTheme.bodyText1.color.withAlpha(150)),
-                      ),
-                    ],
-                  ),
-                  subtitle: Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        item[0].msg,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ).flexExtension(),
-                      WidgetBadge(
-                        noticeCount: item.length,
-                      )
-                    ],
-                  ),
-                );
-              },
-              separatorBuilder: (context, item) => Divider(),
-              itemCount: data.length);
+      body: StoreConnector<ReduxStore, Map<dynamic, dynamic>>(
+        converter: (store) => ({"messageList": store.state.messageList, "123": store.state.friendList}),
+        builder: (context, _data) {
+          Map<String, List<MessageEntity>> data = _data['messageList'];
+          return WidgetRefresh(
+            empty: data.length == 0,
+            isScroll: false,
+            method: () async {
+              await MessageUtil().getOfflineMessage();
+            },
+            child: ListView.separated(
+                padding: EdgeInsets.zero,
+                itemBuilder: (context, index) {
+                  List<MessageEntity> item = data[data.keys.toList()[index]];
+                  List<MessageEntity> _item = item.deepCopy();
+                  _item.sort((a1, a2) => DateTime.parse(a2.senderTime).millisecondsSinceEpoch.compareTo(DateTime.parse(a1.senderTime).millisecondsSinceEpoch));
+                  MessageEntity element = _item[0];
+                  var memberInfo = FriendHelper.getFreindInfo(element.sessionId);
+                  return ListTile(
+                    onTap: () {
+                      MessageUtil().startSession(context, element.sessionId, false);
+                    },
+                    contentPadding: [8, 16].setPadding(),
+                    leading: WidgetAvatar(
+                      url: memberInfo?.avatar ?? null,
+                      size: 40.setWidth(),
+                    ),
+                    title: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(memberInfo?.remark ?? memberInfo?.nickName ?? "", style: TextStyle(fontSize: 16.setSp())),
+                        Text(
+                          DateUtil.formatDateStr(element.senderTime, format: "MM-dd HH:mm"),
+                          style: TextStyle(fontSize: 12.setSp(), color: Theme.of(context).textTheme.bodyText1.color.withAlpha(150)),
+                        ),
+                      ],
+                    ),
+                    subtitle: Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          element.msg,
+                          maxLines: 1,
+                          style: Theme.of(context).textTheme.bodyText1.copyWith(fontSize: 14.setSp()),
+                          overflow: TextOverflow.ellipsis,
+                        ).flexExtension(),
+                        WidgetBadge(
+                          noticeCount: _item.where((element) => element.isRead == 0 && element.senderId != ReduxUtil.store.state.memberInfo.memberId).length,
+                        )
+                      ],
+                    ),
+                  );
+                },
+                separatorBuilder: (context, element) => Divider(),
+                itemCount: data.length),
+          );
         },
       ),
     );
