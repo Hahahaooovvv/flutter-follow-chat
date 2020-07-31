@@ -3,7 +3,9 @@ import 'dart:convert';
 import 'package:flustars/flustars.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:follow/entity/enum/sharedPreferences.dart';
 import 'package:follow/utils/commonUtil.dart';
+import 'package:follow/utils/reduxUtil.dart';
 
 extension WidgetExtensionUtil on Widget {
   Widget paddingExtension(EdgeInsets padding) {
@@ -101,6 +103,12 @@ extension ListExtensionUtil on List {
 extension MapExtensionUtils on Map {
   String jsonEncode() {
     return json.encode(this);
+  }
+}
+
+extension StringExtensionUtils on SharePreferencesKeys {
+  String toPrivateUserKeys() {
+    return this.toString() + "_" + ReduxUtil.store.state.memberInfo?.memberId;
   }
 }
 

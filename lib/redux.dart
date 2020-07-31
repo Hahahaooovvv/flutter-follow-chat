@@ -1,5 +1,6 @@
 import 'package:follow/entity/apis/entityFriendApi.dart';
 import 'package:follow/entity/apis/entityMemberApi.dart';
+import 'package:follow/entity/member/ebriefMemberInfo.dart';
 import 'package:follow/entity/notice/messageEntity.dart';
 
 class ReduxActionsEntity<T> {
@@ -13,6 +14,7 @@ enum ReduxActions {
   FRIEND_LIST,
   MEMBER_NOTICE_LIST,
   MESSAGE_LIST,
+  BRIEF_MEMBER_INFO,
 }
 
 class ReduxStore {
@@ -20,6 +22,7 @@ class ReduxStore {
   List<EntityFriendListInfo> friendList = [];
   List<EntityNoticeTemple> noticeList = [];
   Map<String, List<MessageEntity>> messageList = {};
+  Map<String, EnityBriefMemberInfo> briefMemberInfo = {};
 }
 
 ReduxStore iniReducer(ReduxStore state, dynamic action) {
@@ -36,6 +39,9 @@ ReduxStore iniReducer(ReduxStore state, dynamic action) {
       return state;
     case ReduxActions.MESSAGE_LIST:
       state.messageList = _action.data;
+      return state;
+    case ReduxActions.BRIEF_MEMBER_INFO:
+      state.briefMemberInfo = _action.data;
       return state;
     default:
       return state;

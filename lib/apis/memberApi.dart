@@ -1,5 +1,6 @@
 import 'package:follow/entity/apis/entityFriendApi.dart';
 import 'package:follow/entity/apis/entityMemberApi.dart';
+import 'package:follow/entity/member/ebriefMemberInfo.dart';
 import 'package:follow/utils/requestUtils.dart';
 
 class MemberApi {
@@ -52,6 +53,20 @@ class MemberApi {
       if (value.data.success) {
         value.data.data.forEach((p) {
           _list.add(EntityNoticeTemple.fromJson(p));
+        });
+      } else {
+        return null;
+      }
+      return _list;
+    });
+  }
+
+  Future<List<EnityBriefMemberInfo>> getBriefMemberInfo(String sessionIds) {
+    return RequestHelper.request("/api/Member/brief", RequestMethod.POST, data: {"ids": sessionIds}).then((value) {
+      List<EnityBriefMemberInfo> _list = [];
+      if (value.data.success) {
+        value.data.data.forEach((p) {
+          _list.add(EnityBriefMemberInfo.fromJson(p));
         });
       } else {
         return null;

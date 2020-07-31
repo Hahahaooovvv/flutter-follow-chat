@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 
 class Config {
   /// 当前环境
-  static EConfigEnvironmental environmental = EConfigEnvironmental.dvevelopment;
+  static EConfigEnvironmental environmental = EConfigEnvironmental.production;
 
   ///
-  static String mainApiUrl = "zdcnb.com";
+  static String mainApiUrl = "172.81.212.120:10010";
   ConfigApis apiUrlsConfig;
   String appId = "0";
   String pid = "201903120228314";
@@ -18,10 +18,10 @@ class Config {
   static Config preInstance;
   Config._internal() {
     if (environmental == EConfigEnvironmental.dvevelopment) {
-      Config.mainApiUrl = "172.16.0.208:5000";
+      Config.mainApiUrl = "localhost:5000";
       apiUrlsConfig = ConfigApis(ws: "$wsProtocol${Config.mainApiUrl}", main: "$protocol${Config.mainApiUrl}");
     } else {
-      apiUrlsConfig = ConfigApis(ws: "${wsProtocol}api.${Config.mainApiUrl}", main: "${protocol}api.${Config.mainApiUrl}");
+      apiUrlsConfig = ConfigApis(ws: "$wsProtocol${Config.mainApiUrl}/websocket", main: "$protocol${Config.mainApiUrl}");
     }
   }
   static Config _getInstance() {

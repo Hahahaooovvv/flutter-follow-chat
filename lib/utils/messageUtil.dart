@@ -45,7 +45,7 @@ class MessageUtil {
   /// 获取历史未读消息
   getOfflineMessage([String sessionId]) {
     MemberApi().getOfflineChatMessage(sessionId).then((value) {
-      if (value.length == 0) {
+      if (value == null || value.length == 0) {
         return;
       }
       this.handleSocketMsgList(value);
@@ -97,8 +97,7 @@ class MessageUtil {
                   onPressed: () {
                     return MessageUtil().startSession(CommonUtil.oneContext.context, temple.senderId, false);
                   })
-              : null
-              );
+              : null);
     });
   }
 

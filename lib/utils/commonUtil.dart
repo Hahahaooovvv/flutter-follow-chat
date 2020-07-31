@@ -34,6 +34,8 @@ class CommonUtil {
         FriendHelper().getFriendList();
         MessageUtil.cacheToRedux();
         RouterUtil.replace(context, BottomNavigationBarPage());
+
+        FriendHelper().cacheBriefMemberInfoListToRedux();
       }
       return value == null ? false : true;
     });

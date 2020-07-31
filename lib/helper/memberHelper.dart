@@ -95,14 +95,14 @@ class MemberHelper {
   /// 退出登录
   Future<void> signOut(BuildContext context) async {
     await CommonUtil.getSharedPreferencesInstance().then((instance) async {
-      /// 跳转到登录页面
-      await RouterUtil.pushAndRemoveUntil(context, EntrancePage());
-
       /// 清除登录记录
       await instance.remove(SharePreferencesKeys.USERLOGINID.toString());
 
       /// 清除redux数据
       new SocketUtil().close();
+
+      /// 跳转到登录页面
+      await RouterUtil.pushAndRemoveUntil(context, EntrancePage(isFirst: false));
       this.cacheMemberInfoToRedux(null);
     });
   }

@@ -1,6 +1,7 @@
 import 'package:flustars/flustars.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
+import 'package:follow/entity/member/ebriefMemberInfo.dart';
 import 'package:follow/entity/notice/messageEntity.dart';
 import 'package:follow/helper/friendHelper.dart';
 import 'package:follow/redux.dart';
@@ -32,9 +33,10 @@ class _MessagePageState extends State<MessagePage> with AutomaticKeepAliveClient
     return Scaffold(
       appBar: WidgetAppbar(title: Text("最近消息")),
       body: StoreConnector<ReduxStore, Map<dynamic, dynamic>>(
-        converter: (store) => ({"messageList": store.state.messageList, "123": store.state.friendList}),
+        converter: (store) => ({"messageList": store.state.messageList, "briefInfo": FriendHelper.getBriefMemberInfos(store.state.messageList.keys.toList())}),
         builder: (context, _data) {
           Map<String, List<MessageEntity>> data = _data['messageList'];
+          Map<String, EnityBriefMemberInfo> briefMemberInfo = _data["briefInfo"];
           return WidgetRefresh(
             empty: data.length == 0,
             isScroll: false,
@@ -48,7 +50,7 @@ class _MessagePageState extends State<MessagePage> with AutomaticKeepAliveClient
                   List<MessageEntity> _item = item.deepCopy();
                   _item.sort((a1, a2) => DateTime.parse(a2.senderTime).millisecondsSinceEpoch.compareTo(DateTime.parse(a1.senderTime).millisecondsSinceEpoch));
                   MessageEntity element = _item[0];
-                  var memberInfo = FriendHelper.getFreindInfo(element.sessionId);
+                  EnityBriefMemberInfo memberInfo = briefMemberInfo[element.sessionId];
                   return ListTile(
                     onTap: () {
                       MessageUtil().startSession(context, element.sessionId, false);
@@ -61,7 +63,7 @@ class _MessagePageState extends State<MessagePage> with AutomaticKeepAliveClient
                     title: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(memberInfo?.remark ?? memberInfo?.nickName ?? "", style: TextStyle(fontSize: 16.setSp())),
+                        Text(memberInfo?.remark ?? memberInfo?.nameOrRemark ?? "", style: TextStyle(fontSize: 16.setSp())),
                         Text(
                           DateUtil.formatDateStr(element.senderTime, format: "MM-dd HH:mm"),
                           style: TextStyle(fontSize: 12.setSp(), color: Theme.of(context).textTheme.bodyText1.color.withAlpha(150)),

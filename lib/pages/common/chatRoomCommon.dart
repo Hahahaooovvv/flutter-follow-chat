@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:follow/entity/apis/entityFriendApi.dart';
+import 'package:follow/entity/member/ebriefMemberInfo.dart';
 import 'package:follow/entity/notice/messageEntity.dart';
 import 'package:follow/helper/friendHelper.dart';
 import 'package:follow/redux.dart';
@@ -39,16 +41,22 @@ class _ChatRoomCommonPageState extends State<ChatRoomCommonPage> with SingleTick
   @override
   void initState() {
     super.initState();
-    var memberInfo = FriendHelper.getFreindInfo(this.widget.sessionId);
-    this.nickName = memberInfo.nickName;
-    this.avatar = memberInfo.avatar;
-    this.ownAvatar = ReduxUtil.store.state.memberInfo.avatar;
-    this.ownMemberId = ReduxUtil.store.state.memberInfo.memberId;
+
     CommonUtil.whenRenderEnd((duration) {
       // 滚动到最底部
       this._scrollController.jumpTo(this._scrollController.position.maxScrollExtent);
     });
     WidgetsBinding.instance.addObserver((this));
+    this.setNameAndAvatar();
+  }
+
+  void setNameAndAvatar() {
+    var memberInfo = FriendHelper.getBriefMemberInfos([this.widget.sessionId]);
+    var find = memberInfo[this.widget.sessionId];
+    this.nickName = find?.remark ?? find?.name;
+    this.avatar = find?.avatar;
+    this.ownAvatar = ReduxUtil.store.state.memberInfo.avatar;
+    this.ownMemberId = ReduxUtil.store.state.memberInfo.memberId;
   }
 
   @override
@@ -93,13 +101,24 @@ class _ChatRoomCommonPageState extends State<ChatRoomCommonPage> with SingleTick
         title: Text(this.nickName ?? ""),
         centerTitle: false,
       ),
-      body: StoreConnector<ReduxStore, List<MessageEntity>>(
+      body: StoreConnector<ReduxStore, Map<String, dynamic>>(
         onDidChange: (_data) {
+          Map<String, EnityBriefMemberInfo> brief = _data['briefInfo'];
+          if (brief[this.widget.sessionId]?.nameOrRemark != this.nickName) {
+            this.setState(() {
+              this.nickName = brief[this.widget.sessionId]?.nameOrRemark;
+            });
+          }
           this._scrollController.animateTo(this._scrollController.position.maxScrollExtent, duration: Duration(milliseconds: 100), curve: Curves.ease);
         },
-        converter: (store) => store.state.messageList[this.widget.sessionId] ?? [],
-        builder: (context, data) {
+        converter: (store) => {
+          "messageEntity": store.state.messageList[this.widget.sessionId] ?? <MessageEntity>[],
+          "briefInfo": FriendHelper.getBriefMemberInfos([this.widget.sessionId])
+        },
+        builder: (context, storeData) {
+          List<MessageEntity> data = storeData['messageEntity'];
           List<MessageEntity> _data = data.deepCopy();
+          Map<String, EnityBriefMemberInfo> brief = storeData['briefInfo'];
           _data.sort((a2, a1) => DateTime.parse(a2.senderTime).millisecondsSinceEpoch.compareTo(DateTime.parse(a1.senderTime).millisecondsSinceEpoch));
           return Column(
             children: <Widget>[
@@ -112,7 +131,7 @@ class _ChatRoomCommonPageState extends State<ChatRoomCommonPage> with SingleTick
                   return WidgetChatMessageItem(
                     beforeTime: index == 0 ? null : _data[index - 1].senderTime,
                     messageEntity: item,
-                    avatar: this.avatar,
+                    avatar: brief[this.widget.sessionId]?.avatar,
                     ownAvatar: this.ownAvatar,
                   );
                 },

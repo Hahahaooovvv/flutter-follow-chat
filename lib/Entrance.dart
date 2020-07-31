@@ -7,8 +7,8 @@ import 'package:follow/utils/extensionUtil.dart';
 import 'package:follow/utils/routerUtil.dart';
 
 class EntrancePage extends StatefulWidget {
-  EntrancePage({Key key}) : super(key: key);
-
+  EntrancePage({Key key, this.isFirst: true}) : super(key: key);
+  final bool isFirst;
   @override
   _EntrancePage createState() => _EntrancePage();
 }
@@ -30,23 +30,26 @@ class _EntrancePage extends State<EntrancePage> {
     CommonUtil.whenRenderEnd((duration) {
       this._changeOpacity();
     });
-    Future.delayed(Duration(milliseconds: 1500), () async {
-      // 判断是否已经登录了
-      if (!await CommonUtil().initSystem(context)) {
-        // 如果有用户登录
-        this._changebtnOpacity();
-      }
-    });
+    if (this.widget.isFirst) {
+      Future.delayed(Duration(milliseconds: 1500), () async {
+        // 判断是否已经登录了
+        if (!await CommonUtil().initSystem(context)) {
+          this._changebtnOpacity();
+        }
+      });
+    } else {
+      this._changebtnOpacity();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor:Color(0XFF060409),
+        backgroundColor: Color(0XFF060409),
         brightness: Brightness.dark,
       ),
-      backgroundColor:Color(0XFF060409),
+      backgroundColor: Color(0XFF060409),
       body: Stack(
         children: <Widget>[
           AnimatedOpacity(
