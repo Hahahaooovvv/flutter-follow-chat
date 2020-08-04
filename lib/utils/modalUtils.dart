@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:follow/apis/friendApis.dart';
 import 'package:follow/entity/apis/entityFriendApi.dart';
 import 'package:follow/helper/friendHelper.dart';
@@ -8,9 +7,13 @@ import 'package:follow/helper/noticeHelper.dart';
 import 'package:follow/utils/commonUtil.dart';
 import 'package:follow/utils/extensionUtil.dart';
 import 'package:follow/utils/messageUtil.dart';
+import 'package:follow/utils/toastUtil.dart';
 import 'package:follow/wiget/widgetPopSelectModal.dart';
+import 'package:loading_indicator/loading_indicator.dart';
 
 class ModalUtil {
+  static BuildContext loadingContext;
+
   /// 底部弹出选择栏
   static showPopSelect<T>(
     BuildContext context, {
@@ -39,17 +42,34 @@ class ModalUtil {
   }
 
   static showLoading() {
-    EasyLoading.show();
+    dismissLoading();
+    loadingContext = CommonUtil.oneContext.context;
+    showDialog(
+        context: loadingContext,
+        barrierDismissible: false,
+        builder: (context) {
+          return AlertDialog(
+            backgroundColor: Colors.transparent,
+            content: Align(
+              child: LoadingIndicator(
+                indicatorType: Indicator.pacman,
+                color: Colors.white,
+              ).sizeExtension(size: 80),
+            ),
+          );
+        });
   }
 
-  static dismissLoading() {
-    EasyLoading.dismiss();
+  static dismissLoading() async {
+    if (loadingContext != null) {
+      Navigator.pop(loadingContext);
+      loadingContext = null;
+    }
   }
 
   /// 吐司
   static toastMessage(String message, {Duration duration}) {
-    duration = Duration(milliseconds: 1500);
-    EasyLoading.showToast(message, duration: duration);
+    ToastUtil.show(CommonUtil.oneContext.context, message);
   }
 
   static showSnackBar(Widget content, {SnackBarAction action}) {

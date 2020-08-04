@@ -1,16 +1,21 @@
 # follow
 
-A new Flutter project.
+仅作为学习使用的一款聊天交友APP。  
+> 项目介绍  
 
-## Getting Started
 
-This project is a starting point for a Flutter application.
+前端使用Flutter构建，后端使用netcore，（因本人后端技术实在太垃圾，后端选择不开源QAQ），使用websocket交互，未使用三方IM，前台缓使`sqllite`缓存聊天信息。  
+本项目刚开始启动，作为一个从0开始的项目，我还有很多设想，会在职业生涯中慢慢完善。  
 
-A few resources to get you started if this is your first Flutter project:
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+> 更新日志
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+-  [v 1.0.1](https://www.runoob.com) (第一次项目更新，基础聊天、更换头像、添加好友等)
+
+> 下版本预计目标  
+
+* [ ] 发送图片、视频消息
+* [ ] 发送语音聊天
+* [ ] 处理websocket心跳检测
+
+杨萍。 40010955555

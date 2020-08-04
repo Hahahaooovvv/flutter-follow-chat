@@ -1,11 +1,13 @@
 import 'package:flustars/flustars.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:follow/Entrance.dart';
 import 'package:follow/config.dart';
 import 'package:follow/redux.dart';
+import 'package:follow/utils/chineseLocalLizations.dart';
 import 'package:follow/utils/extensionUtil.dart';
 import 'package:follow/utils/reduxUtil.dart';
 import 'package:follow/utils/requestUtils.dart';
@@ -46,8 +48,18 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return StoreProvider<ReduxStore>(
         store: widget.store,
-        child: FlutterEasyLoading(
-            child: MaterialApp(
+        child: MaterialApp(
+          localizationsDelegates: [
+            ChineseCupertinoLocalizations.delegate,
+            DefaultCupertinoLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+          ],
+          locale: Locale('zh', 'CH'),
+          supportedLocales: [
+            const Locale('zh', 'CN'),
+            const Locale('en', 'US'),
+          ],
           builder: OneContext().builder,
           title: 'Floow Chat',
           theme: ThemeData(
@@ -69,6 +81,10 @@ class _MyAppState extends State<MyApp> {
             visualDensity: VisualDensity.adaptivePlatformDensity,
           ),
           home: EntrancePage(),
-        )));
+        )
+        // FlutterEasyLoading(
+        //     child:)
+
+        );
   }
 }

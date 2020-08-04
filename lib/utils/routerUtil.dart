@@ -14,7 +14,7 @@ class RouterUtil extends PageRouteBuilder {
   }
 
   static Future pushAndRemoveUntil(BuildContext context, Widget widget, [RouterAnimationType type]) {
-    return Navigator.of(context).pushReplacement(RouterUtil(widget, type: type));
+    return Navigator.of(context).pushAndRemoveUntil(RouterUtil(widget, type: type), (route) => route == null);
   }
 
   final Widget widget;

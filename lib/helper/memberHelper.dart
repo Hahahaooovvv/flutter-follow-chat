@@ -26,7 +26,7 @@ class MemberHelper {
         if (memberInfo != null) {
           await this.cacheUserLoginToLocal(memberInfo);
           this.cacheMemberInfoToRedux(memberInfo);
-          RouterUtil.replace(context, BottomNavigationBarPage());
+          RouterUtil.pushAndRemoveUntil(context, BottomNavigationBarPage());
         }
       });
     }

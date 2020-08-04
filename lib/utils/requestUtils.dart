@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:follow/config.dart';
 import 'package:follow/utils/modalUtils.dart';
 import 'package:follow/utils/reduxUtil.dart';
@@ -85,7 +84,7 @@ class RequestHelper {
   }) {
     // 展示Loading
     if (showLoading) {
-      EasyLoading.show();
+      ModalUtil.showLoading();
     }
     Future<Response<EntityResponse>> response;
     switch (method) {
@@ -105,7 +104,7 @@ class RequestHelper {
     Completer<Response<EntityResponse<dynamic>>> completer = Completer();
     response.then((value) {
       if (showLoading) {
-        EasyLoading.dismiss(animation: false);
+        ModalUtil.dismissLoading();
       }
       if (value.data.success) {
         // 请求成功
@@ -120,7 +119,7 @@ class RequestHelper {
       completer.complete(value);
       return value;
     }).catchError((e) {
-      EasyLoading.dismiss();
+      ModalUtil.dismissLoading();
       ModalUtil.toastMessage("网络链接缓慢");
       completer.completeError(e);
     });
