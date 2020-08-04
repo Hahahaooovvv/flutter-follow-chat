@@ -98,11 +98,12 @@ class MemberHelper {
       /// 清除登录记录
       await instance.remove(SharePreferencesKeys.USERLOGINID.toString());
 
-      /// 清除redux数据
       new SocketUtil().close();
 
-      /// 跳转到登录页面
+      /// 跳转到入口页面
       await RouterUtil.pushAndRemoveUntil(context, EntrancePage(isFirst: false));
+
+      /// 清除redux数据
       this.cacheMemberInfoToRedux(null);
     });
   }

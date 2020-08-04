@@ -8,14 +8,12 @@
 本项目刚开始启动，作为一个从 0 开始的项目，我还有很多设想，会在职业生涯中慢慢完善。
 
 > 软件相册   
-
-<center>
-<figure>
-<img src="https://github.com/ZhangDengchuan/flutter-follow-chat/blob/dev_zhangdengchuan/assets/cover.gif?raw=true" />
+<div style="display:flex" >
+    <img src="https://github.com/ZhangDengchuan/flutter-follow-chat/blob/dev_zhangdengchuan/assets/cover.gif?raw=true" />
 <img src="https://github.com/ZhangDengchuan/flutter-follow-chat/blob/dev_zhangdengchuan/assets/friend.gif?raw=true" />
 <img src="https://github.com/ZhangDengchuan/flutter-follow-chat/blob/dev_zhangdengchuan/assets/read.gif?raw=true" />
-</figure>
-</center>
+</div>
+
 > 更新日志
 
 - v 1.0.1 (项目发布，基础聊天、更换头像、添加好友等)
@@ -26,7 +24,17 @@
 - [ ] 发送语音聊天
 - [ ] 处理 websocket 心跳检测
 
->  Flutter交流群  
+
+
+>  体验  
+
+android下载地址：http://wechat-demo-zdc.oss-cn-chengdu.aliyuncs.com/app/release/follow-1-0-1.apk
+
+二维码：![下载地址](https://github.com/ZhangDengchuan/flutter-follow-chat/blob/dev_zhangdengchuan/assets/v-1-0-1.png?raw=true)
+
+
+
+>  交流群  
 
 QQ群: 879108483
 

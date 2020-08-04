@@ -39,6 +39,7 @@ class WidgetChatMessageItem extends StatelessWidget {
               child: Text(
                 this.messageEntity.msg,
                 textAlign: TextAlign.left,
+                style: TextStyle(fontSize: 14.setSp()),
               ),
             ),
             Container(width: 50),
