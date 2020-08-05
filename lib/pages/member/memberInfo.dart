@@ -88,7 +88,7 @@ class _MemnerInfoPageState extends State<MemnerInfoPage> {
                           padding: 3,
                         ).paddingExtension(EdgeInsets.only(bottom: 4.setHeight())).tapExtension(() {
                           if (isMe)
-                            ImageUtil().upLoadAvatar(context).then((value) async {
+                            ImageUtil().uploadImg(context, clip: true).then((value) async {
                               if (value != null) {
                                 await MemberApi().settingAvatar(value);
                                 MemberHelper().updateMemberInfo();

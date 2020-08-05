@@ -75,7 +75,7 @@ class _MessagePageState extends State<MessagePage> with AutomaticKeepAliveClient
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          element.msg,
+                          [element.msg, "[图片消息]",["视频消息"]][element.msgType],
                           maxLines: 1,
                           style: Theme.of(context).textTheme.bodyText1.copyWith(fontSize: 14.setSp()),
                           overflow: TextOverflow.ellipsis,

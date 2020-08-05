@@ -48,7 +48,7 @@ class ImageUtil {
   }
 
   /// 上传头像
-  Future<String> upLoadAvatar(BuildContext context, {ImageSource source}) async {
+  Future<String> uploadImg(BuildContext context, {ImageSource source, bool clip: false}) async {
     File _file = await this.selectImagePopSelect(context, source: source);
     if (_file?.path == null) {
       return null;
@@ -56,31 +56,33 @@ class ImageUtil {
       ModalUtil.toastMessage("仅支持png、jpg格式图片");
       return null;
     }
-    File croppedFile = await ImageCropper.cropImage(
-        sourcePath: _file.path,
-        cropStyle: CropStyle.rectangle,
-        aspectRatio: CropAspectRatio(ratioX: 10, ratioY: 10),
-        aspectRatioPresets: [CropAspectRatioPreset.square],
-        androidUiSettings: AndroidUiSettings(
-          toolbarTitle: 'Cropper',
-          toolbarColor: Colors.deepOrange,
-          toolbarWidgetColor: Colors.white,
-          initAspectRatio: CropAspectRatioPreset.square,
-          lockAspectRatio: false,
-        ),
-        maxWidth: 500,
-        maxHeight: 500,
-        iosUiSettings: IOSUiSettings(
-          minimumAspectRatio: 1.0,
-          aspectRatioPickerButtonHidden: true,
-          cancelButtonTitle: "取消",
-          doneButtonTitle: "确定",
-        ));
-    return this.uploadImage(croppedFile);
+    if (clip) {
+      _file = await ImageCropper.cropImage(
+          sourcePath: _file.path,
+          cropStyle: CropStyle.rectangle,
+          aspectRatio: CropAspectRatio(ratioX: 10, ratioY: 10),
+          aspectRatioPresets: [CropAspectRatioPreset.square],
+          androidUiSettings: AndroidUiSettings(
+            toolbarTitle: 'Cropper',
+            toolbarColor: Colors.deepOrange,
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.square,
+            lockAspectRatio: false,
+          ),
+          maxWidth: 500,
+          maxHeight: 500,
+          iosUiSettings: IOSUiSettings(
+            minimumAspectRatio: 1.0,
+            aspectRatioPickerButtonHidden: true,
+            cancelButtonTitle: "取消",
+            doneButtonTitle: "确定",
+          ));
+    }
+    return this.uploadImageByFile(_file);
   }
 
   /// 上传图片
-  Future<String> uploadImage(File file) async {
+  Future<String> uploadImageByFile(File file) async {
     Size _size = await this.getImageSize(file);
     String base64 = await this.fileToBase64(file);
     return MemberApi().uploadImageByBase64(base64, _size.width, _size.height);

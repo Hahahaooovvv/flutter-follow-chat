@@ -36,6 +36,7 @@ class _WidgetImagePvreviewState extends State<WidgetImagePvreview> {
             children: [
               AppBar(brightness: Brightness.dark),
               Swiper(
+                physics: ClampingScrollPhysics(),
                 onTap: (int index) {
                   Navigator.pop(context);
                 },

@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:follow/utils/extensionUtil.dart';
 
@@ -14,24 +15,23 @@ class WidgetAvatar extends StatelessWidget {
   }) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    String _url = this.url ?? "https://dss3.bdstatic.com/70cFv8Sh_Q1YnxGkpoWK1HF6hhy/it/u=218375221,1552855610&fm=111&gp=0.jpg";
+    String _url = this.url;
     return ClipOval(
       child: Container(
         color: Colors.white,
         padding: this.padding.setPaddingAll(),
-        child: _url.startsWith("http")
-            ? ClipOval(
-                child: Image.network(
-                _url,
-                width: this.size.setWidth(),
-                height: this.size.setWidth(),
-              ))
-            : ClipOval(
-                child: Image.asset(
-                _url,
-                width: this.size.setWidth(),
-                height: this.size.setWidth(),
-              )),
+        child: ClipOval(
+            child: CachedNetworkImage(
+          imageUrl: _url,
+          width: this.size.setWidth(),
+          height: this.size.setWidth(),
+        )
+            //     Image.network(
+            //   _url,
+            //   width: this.size.setWidth(),
+            //   height: this.size.setWidth(),
+            // )
+            ),
       ),
     );
   }

@@ -10,9 +10,11 @@ import 'package:follow/utils/commonUtil.dart';
 import 'package:follow/utils/extensionUtil.dart';
 import 'package:follow/utils/messageUtil.dart';
 import 'package:follow/utils/reduxUtil.dart';
+import 'package:follow/utils/routerUtil.dart';
 import 'package:follow/utils/socketUtil.dart';
 import 'package:follow/wiget/chat/widgetChatInput.dart';
 import 'package:follow/wiget/chat/widgetChatMessageItem.dart';
+import 'package:follow/wiget/widgetImagePvreview.dart';
 
 class ChatRoomCommonPage extends StatefulWidget {
   /// 对象ID 如果为群 对象就为群
@@ -66,8 +68,8 @@ class _ChatRoomCommonPageState extends State<ChatRoomCommonPage> with SingleTick
     });
   }
 
-  void onSend(String message) async {
-    var _content = {"msg": message, "msgType": 0, "localMsgId": CommonUtil.randomString(), "status": 0};
+  void onSend(int msgType, String message) async {
+    var _content = {"msg": message, "msgType": msgType, "localMsgId": CommonUtil.randomString(), "status": 0};
     var temple = EntityNoticeTemple(
         // 消息类型 单聊
         type: 1,
@@ -78,11 +80,15 @@ class _ChatRoomCommonPageState extends State<ChatRoomCommonPage> with SingleTick
         createTime: DateTime.now().toString(),
         isRead: 1,
         content: _content);
+    this.sendMessage(temple);
     // 存入sqllite
-    MessageUtil.handleSocketMsg(temple);
     temple.content = json.encode(_content);
     // 发送到后端
     SocketUtil.webSocketInstance.add(json.encode(temple.toJson()));
+  }
+
+  void sendMessage(EntityNoticeTemple temple) {
+    MessageUtil.handleSocketMsg(temple);
   }
 
   @override
@@ -90,6 +96,17 @@ class _ChatRoomCommonPageState extends State<ChatRoomCommonPage> with SingleTick
     super.dispose();
     this._scrollController.dispose();
     WidgetsBinding.instance.removeObserver(this);
+  }
+
+  /// 点击图片
+  void _onImagePress(int _index, List<String> _imgList) {
+    RouterUtil.push(context, WidgetImagePvreview(iniIndex: _index, imageList: _imgList), RouterAnimationType.fade);
+  }
+
+  /// 从新发送消息
+  void _onRePushMessage(MessageEntity messageEntity) async {
+    await MessageUtil().deleteMessage(messageEntity.sessionId, localMsgIds: [messageEntity.localMsgId]);
+    this.onSend(messageEntity.msgType, messageEntity.msg);
   }
 
   @override
@@ -127,6 +144,13 @@ class _ChatRoomCommonPageState extends State<ChatRoomCommonPage> with SingleTick
                 itemBuilder: (context, index) {
                   var item = _data[index];
                   return WidgetChatMessageItem(
+                    onRePushMessage: this._onRePushMessage,
+                    onImagePress: () {
+                      var _wherelist = _data.where((element) => element.msgType == 1).toList();
+                      int _findIndex =
+                          _wherelist.indexWhere((element) => (element.msgId != null && element.msgId == item.msgId) || (element.localMsgId != null && element.localMsgId == item.localMsgId));
+                      this._onImagePress(_findIndex, _wherelist.map((e) => e.msg).toList());
+                    },
                     beforeTime: index == 0 ? null : _data[index - 1].senderTime,
                     messageEntity: item,
                     avatar: brief[this.widget.sessionId]?.avatar,

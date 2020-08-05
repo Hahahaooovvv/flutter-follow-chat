@@ -108,7 +108,7 @@ class _HomeDrawerState extends State<HomeDrawer> {
                     ], onSelect: (value) async {
                       print(value);
                       if (value == "1") {
-                        ImageUtil().upLoadAvatar(context, source: ImageSource.gallery).then((value) async {
+                        ImageUtil().uploadImg(context, source: ImageSource.gallery, clip: true).then((value) async {
                           if (value != null) {
                             await MemberApi().settingCover(value);
                             MemberHelper().updateMemberInfo();

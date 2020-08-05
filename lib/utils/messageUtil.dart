@@ -69,7 +69,7 @@ class MessageUtil {
         _map['msgType'],
         _map['msg'],
         null,
-        1,
+        _map['status'],
         _map['msgId'] ?? _map["recId"],
         _map['localMsgId']
       ];
@@ -109,17 +109,19 @@ class MessageUtil {
     }
   }
 
+  // 发送了消息 设置status
   static void handleSocketMsgAck(EntityNoticeTemple temple) async {
     SqlLiteHelper sqlLiteHelper = new SqlLiteHelper();
     Map<String, List<MessageEntity>> data = ReduxUtil.store.state.messageList;
     await sqlLiteHelper.openDataBase();
-    String strSql = "update chat_message set status=? where local_msg_id=?;";
-    await sqlLiteHelper.database.rawUpdate(strSql, [temple.content['status'], temple.content["localMsgId"]]);
+    String strSql = "update chat_message set status=?,msgId=? where local_msg_id=?;";
+    await sqlLiteHelper.database.rawUpdate(strSql, [temple.content['status'], temple.content['msgId'], temple.content["localMsgId"]]);
     sqlLiteHelper.closeDataBase();
     var list = data[temple.senderId];
     var find = list.firstWhere((element) => element.localMsgId == temple.content['localMsgId'], orElse: () => null);
     if (find != null) {
       find.status = temple.content['status'];
+      find.msgId = temple.content['msgId'];
       ReduxUtil.dispatch(ReduxActions.MESSAGE_LIST, data);
     }
   }
@@ -169,6 +171,32 @@ class MessageUtil {
     // if (!isSender) {
     //   SocketUtil.webSocketInstance.add(EntityNoticeTemple(content: _map['offlineId'], type: 2, isRead: 0, createTime: DateTime.now().toIso8601String()).toJson().jsonEncode());
     // }
+  }
+
+  /// 删除消息 传那个根据那个删除
+  Future<void> deleteMessage(
+    String sessionId, {
+    List<String> msgIds,
+    List<String> localMsgIds,
+  }) async {
+    List _msgIds = msgIds ?? localMsgIds ?? [];
+    if (_msgIds.length == 0) {
+      return;
+    }
+    String _msgKey = msgIds != null ? "msgId" : "local_msg_id";
+
+    String _idsStr = _msgIds.map((e) => "?").join(",");
+
+    // 逻辑是修改当前消息的时间 然后从新发送
+    SqlLiteHelper sqlLiteHelper = new SqlLiteHelper();
+    Map<String, List<MessageEntity>> data = ReduxUtil.store.state.messageList;
+    await sqlLiteHelper.openDataBase();
+    String strSql = "delete from chat_message where $_msgKey in($_idsStr)";
+    await sqlLiteHelper.database.rawDelete(strSql, _msgIds);
+    var list = data[sessionId];
+    list.removeWhere((element) => _msgIds.contains(msgIds != null ? element.msgId : element.localMsgId));
+    ReduxUtil.dispatch(ReduxActions.MESSAGE_LIST, data);
+    sqlLiteHelper.closeDataBase();
   }
 
   /// 处理单条消息
@@ -224,6 +252,7 @@ class MessageUtil {
         ..msg = element['msg']
         ..atMembers = element['at_members']
         ..status = element['status']
+        ..localMsgId = element["local_msg_id"]
         ..msgId = element['msgId'];
       if (_map[element['session_id']] != null) {
         _map[element['session_id']].add(entity);
