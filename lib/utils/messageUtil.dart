@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:follow/apis/memberApi.dart';
@@ -210,7 +211,15 @@ class MessageUtil {
     bool isSender = temple.senderId == ReduxUtil.store.state.memberInfo.memberId;
     // 开始回执已收到  如果不是自己发送的
     if (!isSender) {
-      SocketUtil.webSocketInstance.add(EntityNoticeTemple(content: _map['offlineId'], type: 2, isRead: 0, createTime: DateTime.now().toIso8601String()).toJson().jsonEncode());
+      SocketUtil.hubConnection.invoke("SendCommonMessage", args: [
+        EntityNoticeTemple(
+          content: _map['offlineId'],
+          type: 2,
+          isRead: 0,
+          createTime: DateTime.now().toIso8601String(),
+        ).toJson().jsonEncode(),
+      ]);
+      // SocketUtil.webSocketInstance.add(EntityNoticeTemple(content: _map['offlineId'], type: 2, isRead: 0, createTime: DateTime.now().toIso8601String()).toJson().jsonEncode());
     }
     Map<String, List<MessageEntity>> data = ReduxUtil.store.state.messageList;
     MessageEntity entity = MessageEntity()

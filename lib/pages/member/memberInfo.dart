@@ -1,16 +1,13 @@
-import 'dart:async';
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:follow/apis/friendApis.dart';
 import 'package:follow/apis/memberApi.dart';
 import 'package:follow/entity/apis/entityFriendApi.dart';
 import 'package:follow/helper/memberHelper.dart';
 import 'package:follow/pages/friend/addFriends.dart';
+import 'package:follow/utils/chatMessageUtil.dart';
 import 'package:follow/utils/commonUtil.dart';
 import 'package:follow/utils/extensionUtil.dart';
 import 'package:follow/utils/imageUtil.dart';
-import 'package:follow/utils/messageUtil.dart';
 import 'package:follow/utils/reduxUtil.dart';
 import 'package:follow/utils/routerUtil.dart';
 import 'package:follow/utils/socketUtil.dart';
@@ -26,24 +23,23 @@ class MemnerInfoPage extends StatefulWidget {
 }
 
 class _MemnerInfoPageState extends State<MemnerInfoPage> {
-  StreamSubscription<dynamic> _subscription;
   EntityFriendSearch friendInfo;
   @override
   void initState() {
     super.initState();
     this.refreshData();
-    _subscription = SocketUtil.mStream.listen((event) {
-      EntityNoticeTemple temple = EntityNoticeTemple.fromJson(json.decode(event));
+    SocketUtil.hubConnection.on("/common/message", (arguments) {
+      EntityNoticeTemple temple = EntityNoticeTemple.fromJson(arguments[0]);
       if (temple.type == 3 && temple.senderId == this.widget.memberId) {
         this.refreshData();
       }
     });
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    _subscription.cancel();
+    // _subscription = SocketUtil.mStream.listen((event) {
+    //   EntityNoticeTemple temple = EntityNoticeTemple.fromJson(json.decode(event));
+    //   if (temple.type == 3 && temple.senderId == this.widget.memberId) {
+    //     this.refreshData();
+    //   }
+    // });
   }
 
   refreshData() {
@@ -123,7 +119,8 @@ class _MemnerInfoPageState extends State<MemnerInfoPage> {
                                           name: this.friendInfo.nickName,
                                         ));
                                   } else {
-                                    MessageUtil().startSession(context, this.widget.memberId, false);
+                                    ChatMessageUtil().startChat(this.widget.memberId);
+                                    // MessageUtil().startSession(context, this.widget.memberId, false);
                                   }
                                 },
                                 width: 100.setWidth(),

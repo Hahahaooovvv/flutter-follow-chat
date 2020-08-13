@@ -11,7 +11,6 @@ import 'package:follow/utils/commonUtil.dart';
 import 'package:follow/utils/modalUtils.dart';
 import 'package:follow/utils/reduxUtil.dart';
 import 'package:follow/utils/routerUtil.dart';
-import 'package:follow/utils/socketUtil.dart';
 
 class MemberHelper {
   /// 用户登录
@@ -97,8 +96,6 @@ class MemberHelper {
     await CommonUtil.getSharedPreferencesInstance().then((instance) async {
       /// 清除登录记录
       await instance.remove(SharePreferencesKeys.USERLOGINID.toString());
-
-      new SocketUtil().close();
 
       /// 跳转到入口页面
       await RouterUtil.pushAndRemoveUntil(context, EntrancePage(isFirst: false));

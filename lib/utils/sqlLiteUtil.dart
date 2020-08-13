@@ -7,48 +7,71 @@ class SqlTemple {
 }
 
 class SqlLiteHelper {
+  static Database dbInstance;
+
   Database database;
 
-  Future<Database> openDataBase() async {
-    if (this.database != null) {
-      return this.database;
-    }
+  /// 初始化sqllite
+  initSqlLite() async {
     var databasesPath = await getDatabasesPath();
     String path = databasesPath + "/chat_${ReduxUtil.store.state.memberInfo.memberId}.db";
-    Database database = await openDatabase(
+    print(path);
+    SqlLiteHelper.dbInstance = await openDatabase(
       path,
       version: 1,
       onCreate: (Database db, int version) async {
-        // chat_type 0 好友单聊
-        // msg_type 0 文本 1 图片 2 视屏  3 撤回消息
-        // status 0未送达 1已送达
-        // local_msg_id 消息送达后，后端会给前端回执是否发送成功
         await db.execute('''
-          CREATE TABLE chat_message (
-            id INTEGER PRIMARY KEY AUTOINCREMENT, 
-            sender_id TEXT, 
-            session_id TEXT,
-            chat_type INTEGER, 
-            is_read INTEGER,
-            sender_time TEXT,
-            msg_type INTEGER,
-            msg TEXT,
-            at_members TEXT,
-            status INTEGER,
-            msgId TEXT,
-            local_msg_id TEXT
-            )
-          ''');
+       CREATE TABLE chat_msg (
+          "id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+          "msgId" TEXT,
+          "sessionId" TEXT NOT NULL,
+          "chatType" INTEGER NOT NULL,
+          "msg" TEXT NOT NULL,
+          "status" INTEGER NOT NULL,
+          "localStatus" INTEGER NOT NULL,
+          "msgType" INTEGER NOT NULL,
+          "localId" TEXT,
+          "time" INTEGER NOT NULL,
+          "atMembersId" TEXT,
+          "isRead" INTEGER NOT NULL DEFAULT 0,
+          "isWithdraw" INTEGER NOT NULL DEFAULT 0,
+          "senderId" TEXT NOT NULL
+      );
+      ''');
+        await db.execute('''
+      CREATE TABLE chat_message (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        sender_id TEXT,
+        session_id TEXT,
+        chat_type INTEGER,
+        is_read INTEGER,
+        sender_time TEXT,
+        msg_type INTEGER,
+        msg TEXT,
+        at_members TEXT,
+        status INTEGER,
+        msgId TEXT,
+        local_msg_id TEXT
+        )
+      ''');
       },
     );
-    this.database = database;
-    return database;
   }
 
+  Future<Database> openDataBase() async {
+    this.database = SqlLiteHelper.dbInstance;
+    return Future.value(SqlLiteHelper.dbInstance);
+  }
+
+// /Users/zhangdengchuan/Library/Developer/CoreSimulator/Devices/18D5028D-C919-4407-9D3F-5AEDFACE22BF/data/Containers/Data/Application/40F5ED99-9F76-4686-BB62-1ED1C96D9F69/Documents/chat3_7a3fe7aabce54c50a5ce40b1e095efe8.db
   Future<void> closeDataBase() async {
-    if (this.database.isOpen) {
-      await this.database.close();
-    }
+    // if (this.database.isOpen) {
+    //   await this.database.close();
+    // }
+  }
+
+  static Future<void> execute(String strSql, [List<dynamic> datas]) async {
+    await SqlLiteHelper.dbInstance.execute(strSql, datas ?? []);
   }
 
   /// 根据返回的数据获取map
@@ -60,5 +83,11 @@ class SqlLiteHelper {
       });
       return map;
     }).toList();
+  }
+}
+
+extension SqlUtilExtension on Future<List<Map<String, dynamic>>> {
+  Future<List<Map<String, dynamic>>> toListMap() async {
+    return new SqlLiteHelper().getMapFromQueryData(await this);
   }
 }

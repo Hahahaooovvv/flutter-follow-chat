@@ -11,6 +11,7 @@ import 'package:follow/utils/chineseLocalLizations.dart';
 import 'package:follow/utils/extensionUtil.dart';
 import 'package:follow/utils/reduxUtil.dart';
 import 'package:follow/utils/requestUtils.dart';
+import 'package:follow/utils/socketUtil.dart';
 import 'package:one_context/one_context.dart';
 import 'package:redux/redux.dart';
 
@@ -21,6 +22,8 @@ void main() {
   final store = new Store<ReduxStore>(iniReducer, initialState: ReduxStore());
   // 初始化config
   Config.instance;
+  // 初始化socket
+  SocketUtil().initSocket();
   runApp(MyApp(store: store));
   SystemUiOverlayStyle systemUiOverlayStyle = SystemUiOverlayStyle(statusBarColor: Colors.transparent, statusBarBrightness: Brightness.dark);
   // if (Platform.isAndroid) {

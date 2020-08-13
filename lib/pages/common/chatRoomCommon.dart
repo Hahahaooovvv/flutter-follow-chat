@@ -1,17 +1,14 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
-import 'package:follow/entity/apis/entityFriendApi.dart';
 import 'package:follow/entity/member/ebriefMemberInfo.dart';
-import 'package:follow/entity/notice/messageEntity.dart';
+import 'package:follow/entity/notice/EntityChatMessage.dart';
 import 'package:follow/helper/friendHelper.dart';
 import 'package:follow/redux.dart';
+import 'package:follow/utils/chatMessageUtil.dart';
 import 'package:follow/utils/commonUtil.dart';
 import 'package:follow/utils/extensionUtil.dart';
-import 'package:follow/utils/messageUtil.dart';
 import 'package:follow/utils/reduxUtil.dart';
 import 'package:follow/utils/routerUtil.dart';
-import 'package:follow/utils/socketUtil.dart';
 import 'package:follow/wiget/chat/widgetChatInput.dart';
 import 'package:follow/wiget/chat/widgetChatMessageItem.dart';
 import 'package:follow/wiget/widgetImagePvreview.dart';
@@ -32,7 +29,7 @@ class ChatRoomCommonPage extends StatefulWidget {
   _ChatRoomCommonPageState createState() => _ChatRoomCommonPageState();
 }
 
-class _ChatRoomCommonPageState extends State<ChatRoomCommonPage> with SingleTickerProviderStateMixin, WidgetsBindingObserver {
+class _ChatRoomCommonPageState extends State<ChatRoomCommonPage> with SingleTickerProviderStateMixin, WidgetsBindingObserver, AutomaticKeepAliveClientMixin {
   String nickName = "";
   String avatar = "";
   String ownAvatar = "";
@@ -69,26 +66,11 @@ class _ChatRoomCommonPageState extends State<ChatRoomCommonPage> with SingleTick
   }
 
   void onSend(int msgType, String message) async {
-    var _content = {"msg": message, "msgType": msgType, "localMsgId": CommonUtil.randomString(), "status": 0};
-    var temple = EntityNoticeTemple(
-        // 消息类型 单聊
-        type: 1,
-
-        /// 发送人
-        senderId: ReduxUtil.store.state.memberInfo.memberId,
-        receiveId: this.widget.sessionId,
-        createTime: DateTime.now().toString(),
-        isRead: 1,
-        content: _content);
-    this.sendMessage(temple);
-    // 存入sqllite
-    temple.content = json.encode(_content);
-    // 发送到后端
-    SocketUtil.webSocketInstance.add(json.encode(temple.toJson()));
-  }
-
-  void sendMessage(EntityNoticeTemple temple) {
-    MessageUtil.handleSocketMsg(temple);
+    ChatMessageUtil().sendMessage(EntityChatMessage.formFastSend(
+      setMsg: message,
+      setSessionId: this.widget.sessionId,
+      setMsgType: msgType,
+    ));
   }
 
   @override
@@ -96,6 +78,7 @@ class _ChatRoomCommonPageState extends State<ChatRoomCommonPage> with SingleTick
     super.dispose();
     this._scrollController.dispose();
     WidgetsBinding.instance.removeObserver(this);
+    ChatMessageUtil().endChat();
   }
 
   /// 点击图片
@@ -104,13 +87,17 @@ class _ChatRoomCommonPageState extends State<ChatRoomCommonPage> with SingleTick
   }
 
   /// 从新发送消息
-  void _onRePushMessage(MessageEntity messageEntity) async {
-    await MessageUtil().deleteMessage(messageEntity.sessionId, localMsgIds: [messageEntity.localMsgId]);
-    this.onSend(messageEntity.msgType, messageEntity.msg);
+  void _onRePushMessage(EntityChatMessage messageEntity) async {
+    ChatMessageUtil().sendMessage(messageEntity
+      ..id = null
+      ..time = DateTime.now());
+    // await MessageUtil().deleteMessage(messageEntity.sessionId, localMsgIds: [messageEntity.localMsgId]);
+    // this.onSend(messageEntity.msgType, messageEntity.msg);
   }
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       appBar: AppBar(
         title: Text(this.nickName ?? ""),
@@ -127,14 +114,12 @@ class _ChatRoomCommonPageState extends State<ChatRoomCommonPage> with SingleTick
           this._scrollController.animateTo(this._scrollController.position.maxScrollExtent, duration: Duration(milliseconds: 100), curve: Curves.ease);
         },
         converter: (store) => {
-          "messageEntity": store.state.messageList[this.widget.sessionId] ?? <MessageEntity>[],
+          "messageEntity": store.state.roomMessageList ?? <EntityChatMessage>[],
           "briefInfo": FriendHelper.getBriefMemberInfos([this.widget.sessionId])
         },
         builder: (context, storeData) {
-          List<MessageEntity> data = storeData['messageEntity'];
-          List<MessageEntity> _data = data.deepCopy();
+          List<EntityChatMessage> data = storeData['messageEntity'];
           Map<String, EnityBriefMemberInfo> brief = storeData['briefInfo'];
-          _data.sort((a2, a1) => DateTime.parse(a2.senderTime).millisecondsSinceEpoch.compareTo(DateTime.parse(a1.senderTime).millisecondsSinceEpoch));
           return Column(
             children: <Widget>[
               ListView.separated(
@@ -142,16 +127,15 @@ class _ChatRoomCommonPageState extends State<ChatRoomCommonPage> with SingleTick
                 controller: _scrollController,
                 separatorBuilder: (context, index) => Container(height: 2.setHeight()),
                 itemBuilder: (context, index) {
-                  var item = _data[index];
+                  var item = data[index];
                   return WidgetChatMessageItem(
                     onRePushMessage: this._onRePushMessage,
                     onImagePress: () {
-                      var _wherelist = _data.where((element) => element.msgType == 1).toList();
-                      int _findIndex =
-                          _wherelist.indexWhere((element) => (element.msgId != null && element.msgId == item.msgId) || (element.localMsgId != null && element.localMsgId == item.localMsgId));
+                      List<EntityChatMessage> _wherelist = data.where((element) => element.msgType == 1).toList();
+                      int _findIndex = _wherelist.indexWhere((element) => (element.msgId != null && element.msgId == item.msgId) || (element.localId != null && element.localId == item.localId));
                       this._onImagePress(_findIndex, _wherelist.map((e) => e.msg).toList());
                     },
-                    beforeTime: index == 0 ? null : _data[index - 1].senderTime,
+                    beforeTime: index == 0 ? null : data[index - 1].time,
                     messageEntity: item,
                     avatar: brief[this.widget.sessionId]?.avatar,
                     ownAvatar: this.ownAvatar,
@@ -161,6 +145,9 @@ class _ChatRoomCommonPageState extends State<ChatRoomCommonPage> with SingleTick
                 padding: EdgeInsets.only(bottom: 16),
               ).flexExtension(),
               WidgetChatInputPage(
+                scrollToEnd: () {
+                  this._scrollController.jumpTo(this._scrollController.position.maxScrollExtent);
+                },
                 onSend: this.onSend,
               )
             ],
@@ -169,4 +156,7 @@ class _ChatRoomCommonPageState extends State<ChatRoomCommonPage> with SingleTick
       ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

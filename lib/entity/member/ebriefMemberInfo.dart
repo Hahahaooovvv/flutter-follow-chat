@@ -6,7 +6,7 @@ class EnityBriefMemberInfo {
   bool isGroup;
   String nameOrRemark;
 
-  EnityBriefMemberInfo({this.sessionId, this.name, this.remark, this.avatar, this.isGroup});
+  EnityBriefMemberInfo({this.sessionId, this.name, this.remark, this.avatar, this.isGroup, this.nameOrRemark});
 
   EnityBriefMemberInfo.fromJson(Map<String, dynamic> json) {
     sessionId = json['sessionId'];

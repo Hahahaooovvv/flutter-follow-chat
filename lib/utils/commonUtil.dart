@@ -9,8 +9,10 @@ import 'package:follow/helper/noticeHelper.dart';
 import 'package:follow/utils/messageUtil.dart';
 import 'package:follow/utils/modalUtils.dart';
 import 'package:follow/utils/routerUtil.dart';
+import 'package:follow/utils/sqlLiteUtil.dart';
 import 'package:one_context/one_context.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:vibrate/vibrate.dart';
 
 class CommonUtil {
   static OneContext get oneContext => _getContext();
@@ -20,13 +22,19 @@ class CommonUtil {
     return OneContext();
   }
 
+  /// 震动
+  static vibrate() async {
+    if (await Vibrate.canVibrate) Vibrate.vibrateWithPauses([Duration(milliseconds: 500)]);
+  }
+
   /// 初始化数据
   /// 每次进APP的时候在入口处调用
   Future<bool> initSystem(BuildContext context) async {
     MemberHelper memberHelper = new MemberHelper();
-    return memberHelper.getMemberInfoFromLocal().then((value) {
+    return memberHelper.getMemberInfoFromLocal().then((value) async {
       if (value != null) {
         memberHelper.cacheMemberInfoToRedux(value);
+        await SqlLiteHelper().initSqlLite();
         // 初始化通知
         NoticeHelper().refreshNotice();
         FriendHelper().cacheToRedux();

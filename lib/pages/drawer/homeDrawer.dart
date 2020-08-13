@@ -106,7 +106,6 @@ class _HomeDrawerState extends State<HomeDrawer> {
                       ...(memberInfo.cover == null ? [] : [WidgetPopSelectModalItem(childStr: "查看封面", value: "0")]),
                       WidgetPopSelectModalItem(childStr: "修改封面", value: "1"),
                     ], onSelect: (value) async {
-                      print(value);
                       if (value == "1") {
                         ImageUtil().uploadImg(context, source: ImageSource.gallery, clip: true).then((value) async {
                           if (value != null) {

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:follow/apis/memberApi.dart';
+import 'package:follow/utils/commonUtil.dart';
 import 'package:follow/utils/modalUtils.dart';
 import 'package:follow/wiget/widgetPopSelectModal.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -10,7 +11,7 @@ import 'package:image_picker/image_picker.dart';
 
 class ImageUtil {
   /// 选择照片
-  Future<File> selectImagePopSelect(BuildContext context, {ImageSource source}) async {
+  Future<File> selectImagePopSelect(BuildContext context, {ImageSource source, double maxWidth: 500}) async {
     Completer<File> completer = Completer();
     if (source != null) {
       completer.complete(await ImagePicker.pickImage(source: source));
@@ -21,9 +22,9 @@ class ImageUtil {
       ], onSelect: (value) async {
         File image;
         if (value == "0") {
-          image = await ImagePicker.pickImage(source: ImageSource.camera);
+          image = await ImagePicker.pickImage(source: ImageSource.camera, maxWidth: maxWidth);
         } else {
-          image = await ImagePicker.pickImage(source: ImageSource.gallery);
+          image = await ImagePicker.pickImage(source: ImageSource.gallery, maxWidth: maxWidth);
         }
         completer.complete(image);
       });
@@ -45,6 +46,17 @@ class ImageUtil {
   Future<String> fileToBase64(File file) async {
     List<int> imageBytes = await file.readAsBytes();
     return base64Encode(imageBytes);
+  }
+
+  Future<File> getImg({ImageSource source}) async {
+    File _file = await this.selectImagePopSelect(CommonUtil.oneContext.context, source: source);
+    if (_file?.path == null) {
+      return null;
+    } else if (!["png", "jpg"].contains(_file.path.split(".").reversed.toList()[0])) {
+      ModalUtil.toastMessage("仅支持png、jpg格式图片");
+      return null;
+    }
+    return _file;
   }
 
   /// 上传头像
@@ -87,4 +99,11 @@ class ImageUtil {
     String base64 = await this.fileToBase64(file);
     return MemberApi().uploadImageByBase64(base64, _size.width, _size.height);
   }
+
+  // /// 上传图片
+  // Future<String> uploadImage(File file) async {
+  //   Size _size = await this.getImageSize(file);
+  //   String base64 = await this.fileToBase64(file);
+  //   return MemberApi().uploadImageByBase64(base64, _size.width, _size.height);
+  // }
 }

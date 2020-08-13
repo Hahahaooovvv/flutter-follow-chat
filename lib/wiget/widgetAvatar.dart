@@ -21,17 +21,16 @@ class WidgetAvatar extends StatelessWidget {
         color: Colors.white,
         padding: this.padding.setPaddingAll(),
         child: ClipOval(
-            child: CachedNetworkImage(
-          imageUrl: _url,
-          width: this.size.setWidth(),
-          height: this.size.setWidth(),
-        )
-            //     Image.network(
-            //   _url,
-            //   width: this.size.setWidth(),
-            //   height: this.size.setWidth(),
-            // )
-            ),
+            child: _url == null
+                ? Container(
+                    width: this.size.setWidth(),
+                    height: this.size.setWidth(),
+                  )
+                : CachedNetworkImage(
+                    imageUrl: _url,
+                    width: this.size.setWidth(),
+                    height: this.size.setWidth(),
+                  )),
       ),
     );
   }

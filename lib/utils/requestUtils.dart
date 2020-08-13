@@ -2,9 +2,21 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:follow/config.dart';
+import 'package:follow/utils/imageUtil.dart';
 import 'package:follow/utils/modalUtils.dart';
 import 'package:follow/utils/reduxUtil.dart';
+
+class EntityFileUpload<T> {
+  final StreamController<double> streamController;
+  final Future<Response<EntityResponse<dynamic>>> response;
+
+  EntityFileUpload({
+    @required this.streamController,
+    @required this.response,
+  });
+}
 
 class EntityResponse<T> {
   int code;
@@ -60,6 +72,47 @@ class RequestHelper {
       }
       return option;
     }));
+  }
+
+  /// 文件上传
+  static Future<EntityFileUpload> fileUpLoad({
+    String url: "/api/Member/upload",
+    @required String filePath,
+    // @required MultipartFile mltipartFile,
+    @required int fileType,
+  }) async {
+    Size _size = Size(0, 0);
+    if (fileType == 1) {
+      // 图片
+      _size = await ImageUtil().getImageSize(File(filePath));
+    }
+    var _formData = FormData.fromMap({
+      "fileType": fileType,
+      "files": MultipartFile.fromFileSync(filePath),
+      "width": _size.width,
+      "height": _size.height,
+    });
+
+    StreamController<double> streamController = new StreamController<double>.broadcast();
+    Completer<EntityFileUpload<dynamic>> uploadCompleter = Completer();
+    Completer<Response<EntityResponse<dynamic>>> completer = Completer();
+    uploadCompleter.complete(EntityFileUpload(
+      streamController: streamController,
+      response: completer.future,
+    ));
+    RequestHelper.instance.post<EntityResponse>(
+      url,
+      data: _formData,
+      onSendProgress: (_send, _total) {
+        streamController.add(_send / _total);
+      },
+    ).then((value) {
+      completer.complete(value);
+      return value;
+    }).catchError((e) {
+      completer.completeError(e);
+    }).whenComplete(streamController.close);
+    return uploadCompleter.future;
   }
 
   /// get请求

@@ -48,7 +48,7 @@ class _WidgetImagePvreviewState extends State<WidgetImagePvreview> {
                   });
                 },
                 itemBuilder: (BuildContext context, int index) {
-                  return new Image.network(
+                  return Image.network(
                     widget.imageList[index],
                     width: MediaQuery.of(context).size.width,
                     // fit: BoxFit.fill,

@@ -101,9 +101,7 @@ class FriendHelper {
     Map<String, EnityBriefMemberInfo> _map = {};
     List<String> getIds = [];
     var briefMemberInfos = ReduxUtil.store.state.briefMemberInfo;
-
     sessionIds.forEach((e) {
-      // _map[e]=
       var find = briefMemberInfos[e];
       if (find == null) {
         getIds.add(e);
@@ -114,9 +112,23 @@ class FriendHelper {
     // 如果没有 就获取
     if (getIfNull && getIds.length != 0) {
       MemberApi().getBriefMemberInfo(getIds.join(',')).then((value) {
+        List<EnityBriefMemberInfo> defaultList = value.deepCopy();
+        getIds.forEach((element) {
+          if (!defaultList.any((p) => p.sessionId == element)) {
+            // 如果没有查询到 就给默认的值
+            defaultList.add(EnityBriefMemberInfo(
+              sessionId: element,
+              avatar: "http://wechat-demo-zdc.oss-cn-chengdu.aliyuncs.com/default_avatar.jpg",
+              name: "不存在用户",
+              remark: null,
+              isGroup: false,
+              nameOrRemark: "不存在用户",
+            ));
+          }
+        });
         FriendHelper friendHelper = new FriendHelper();
-        friendHelper.cacheBriefMemberInfoListToLocal(list: value);
-        friendHelper.cacheBriefMemberInfoListToRedux(value);
+        friendHelper.cacheBriefMemberInfoListToLocal(list: defaultList);
+        friendHelper.cacheBriefMemberInfoListToRedux(defaultList);
       });
     }
     return _map;

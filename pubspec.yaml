@@ -44,6 +44,14 @@ dependencies:
   flustars: 0.3.3
   one_context: 0.4.0
   loading_indicator: 1.2.0
+  signalr_client: 0.1.6
+  # permission_handler: 5.0.1+1
+  flutter_audio_recorder: 0.5.5
+  just_audio: 0.3.1
+  path_provider: 1.6.11
+  audioplayers: 0.15.1
+  lottie: 0.5.1
+  vibrate: 0.0.4
 
   flutter_localizations:
     sdk: flutter
@@ -67,6 +75,7 @@ flutter:
     - lib/icons/icon_user_female.png
     - lib/icons/icon_user_male.png
     - lib/icons/flash.jpeg
+    - lib/assets/lottie/sound.json
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
   # For details regarding adding assets from package dependencies, see

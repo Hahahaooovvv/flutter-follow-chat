@@ -7,7 +7,8 @@
 前端使用 Flutter 构建，后端使用 netcore，（因本人后端技术实在太垃圾，后端选择不开源 QAQ），使用 websocket 交互，未使用三方 IM，前台缓使`sqllite`缓存聊天信息。  
 本项目刚开始启动，作为一个从 0 开始的项目，我还有很多设想，会在职业生涯中慢慢完善。
 
-> 软件相册   
+> 软件相册
+
 <div style="display:flex" >
     <img src="https://github.com/ZhangDengchuan/flutter-follow-chat/blob/dev_zhangdengchuan/assets/cover.gif?raw=true" />
 <img src="https://github.com/ZhangDengchuan/flutter-follow-chat/blob/dev_zhangdengchuan/assets/friend.gif?raw=true" />
@@ -22,26 +23,22 @@
 
 - [x] 发送图片
 - [x] 点击之后滑动预览发送的图片
-- [x] 当websocket断开 发送消息失败时候有一个小红色的图标点击可从新发送
+- [x] 当 websocket 断开 发送消息失败时候有一个小红色的图标点击可从新发送
 - [ ] 发送视频
 - [ ] 发送语音聊天
-- [ ] 处理 websocket 心跳检测
+- [x] 处理 websocket 心跳检测 (切换 SignlaR)
 
+> 体验
 
-
->  体验  
-
-android下载地址：http://wechat-demo-zdc.oss-cn-chengdu.aliyuncs.com/app/release/follow-1-0-1.apk
+android 下载地址：http://wechat-demo-zdc.oss-cn-chengdu.aliyuncs.com/app/release/follow-1-0-1.apk
 
 二维码：![下载地址](https://github.com/ZhangDengchuan/flutter-follow-chat/blob/dev_zhangdengchuan/assets/v-1-0-1.png?raw=true)
 
+> 交流群
 
+QQ 群: 879108483
 
->  交流群  
-
-QQ群: 879108483
-
-> flutter环境  
+> flutter 环境
 
 ```
 [✓] Flutter (Channel master, 1.21.0-6.0.pre.40, on Mac OS X 10.15.1 19B2106, locale zh-Hans-CN)
@@ -80,4 +77,3 @@ QQ群: 879108483
 
 ! Doctor found issues in 1 category.
 ```
-

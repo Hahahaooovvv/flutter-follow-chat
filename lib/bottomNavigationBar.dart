@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:follow/pages/drawer/homeDrawer.dart';
 import 'package:follow/pages/navigation/friends.dart';
 import 'package:follow/pages/navigation/message.dart';
-import 'package:follow/utils/commonUtil.dart';
 import 'package:follow/utils/modalUtils.dart';
 import 'package:follow/utils/socketUtil.dart';
 
@@ -23,10 +22,15 @@ class _BottomNavigationBarPageState extends State<BottomNavigationBarPage> {
   void initState() {
     super.initState();
     ModalUtil.scaffoldkey = this._scaffoldkey;
-    // 初始化socket
-    CommonUtil.whenRenderEnd((duration) {
-      SocketUtil.initSocket(context);
-    });
+    // socket链接
+    new SocketUtil().connect(true);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    print("socket已经断开");
+    new SocketUtil().close();
   }
 
   @override
