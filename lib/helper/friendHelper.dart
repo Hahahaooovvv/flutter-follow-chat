@@ -27,7 +27,8 @@ class FriendHelper {
                   isGroup: false,
                 ))
             .toList();
-        this.cacheBriefMemberInfoListToDB(_list);
+        await this.cacheBriefMemberInfoListToDB(_list);
+        this.cacheBriefMemberListToRedux();
       }
     });
   }

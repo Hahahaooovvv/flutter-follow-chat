@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:follow/apis/msgApis.dart';
 import 'package:follow/entity/apis/entityFriendApi.dart';
 import 'package:follow/entity/notice/EntityChatMessage.dart';
 import 'package:follow/entity/notice/EntityNewesMessage.dart';
@@ -65,6 +66,15 @@ class ChatMessageUtil {
     return _list;
   }
 
+  /// 获取线上的数据
+  Future<void> getNewesMsgFromServer() async {
+    await MsgApis().getNewesMsgList().then((value) async {
+      await SqlLiteUtil().setSystemConfig(SqlUtilConfigKey.NEWES_LIST, value: DateTime.fromMillisecondsSinceEpoch(value.time).toString());
+      await this.cacheMessageToDB(value.list);
+      await this.cacheNewesMessageFromDBToReudx();
+    });
+  }
+
   /// 发送聊天消息
   void sendMessage(EntityChatMessage chatMessage) async {
     if (chatMessage.msgType != 0) {
@@ -73,10 +83,11 @@ class ChatMessageUtil {
       FileUtil().fileUpload(chatMessage.localId, filePath: chatMessage.msg, fileType: chatMessage.msgType).then((value) {
         this.cacheToChatingRedux([chatMessage]);
         // 上传完毕后删除
-        value.response.then((value) {
+        value.response.then((_value) {
+          value.streamController?.close();
           // 文件上传完成之后
           chatMessage.localStatus = 2;
-          chatMessage.msg = value.data.data;
+          chatMessage.msg = _value.data.data;
           SocketUtil.hubConnection.invoke("SendChatMessage", args: [json.encode(chatMessage.toJson())]);
         });
       });

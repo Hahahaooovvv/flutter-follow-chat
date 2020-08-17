@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:follow/entity/member/ebriefMemberInfo.dart';
 import 'package:follow/entity/notice/EntityChatMessage.dart';
 import 'package:follow/utils/reduxUtil.dart';
@@ -8,6 +9,8 @@ class SqlUtilTemple {
   List<dynamic> dataList;
   List<String> ids;
 }
+
+enum SqlUtilConfigKey { NEWES_LIST }
 
 class SqlLiteUtil {
   static Database dbInstance;
@@ -40,10 +43,10 @@ class SqlLiteUtil {
           );
       ''');
         await db.execute('''
-          CREATE TABLE "chat_message_timer" (
+         CREATE TABLE "system_config" (
           "id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-          "sessionId" TEXT NOT NULL,
-          "requestTime" TEXT NOT NULL
+          "config_key" TEXT NOT NULL,
+          "config_value" TEXT NOT NULL
           );
       ''');
         await db.execute('''
@@ -58,6 +61,35 @@ class SqlLiteUtil {
       ''');
       },
     );
+  }
+
+  Future<void> setSystemConfig(
+    SqlUtilConfigKey enumKey, {
+    String suffix,
+    @required dynamic value,
+  }) async {
+    String key = this.buildConfigKey(enumKey, suffix);
+    await SqlLiteUtil.dbInstance.execute("DELETE FROM SYSTEM_CONFIG WHERE CONFIG_KEY=?;", [key]);
+    await SqlLiteUtil.dbInstance.execute("INSERT INTO SYSTEM_CONFIG(CONFIG_KEY,CONFIG_VALUE) VALUES(?,?)", [key, value]);
+  }
+
+  Future<dynamic> getSystemConfig(SqlUtilConfigKey enumKey, {String suffix}) async {
+    String key = this.buildConfigKey(enumKey, suffix);
+    var _map = this.getMapFromQueryData(await SqlLiteUtil.dbInstance.rawQuery("select config_value from SYSTEM_CONFIG where config_key=?", [key]));
+    if (_map.length > 0) {
+      return _map[0]["config_value"];
+    } else {
+      return null;
+    }
+  }
+
+  String buildConfigKey(SqlUtilConfigKey enumKey, [String suffix]) {
+    switch (enumKey) {
+      case SqlUtilConfigKey.NEWES_LIST:
+        return "NEWES_LIST";
+      default:
+        return "";
+    }
   }
 
   static String getKeys(int length) {

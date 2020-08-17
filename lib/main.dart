@@ -6,7 +6,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:follow/Entrance.dart';
 import 'package:follow/config.dart';
-import 'package:follow/helper/friendHelper.dart';
 import 'package:follow/redux.dart';
 import 'package:follow/utils/chineseLocalLizations.dart';
 import 'package:follow/utils/extensionUtil.dart';

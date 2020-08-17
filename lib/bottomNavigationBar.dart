@@ -47,8 +47,8 @@ class _BottomNavigationBarPageState extends State<BottomNavigationBarPage> {
           });
         },
         items: [
-          BottomNavigationBarItem(icon: Icon(Icons.message), title: Text("消息")),
-          BottomNavigationBarItem(icon: Icon(Icons.people), title: Text("联系人")),
+          BottomNavigationBarItem(icon: Icon(Icons.message), label: "消息"),
+          BottomNavigationBarItem(icon: Icon(Icons.people), label: "联系人"),
         ],
       ),
       body: PageView(

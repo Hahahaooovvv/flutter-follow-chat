@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
-import 'package:follow/entity/member/ebriefMemberInfo.dart';
 import 'package:follow/entity/notice/EntityChatMessage.dart';
 import 'package:follow/helper/friendHelper.dart';
 import 'package:follow/redux.dart';

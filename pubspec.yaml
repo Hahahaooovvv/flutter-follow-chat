@@ -37,7 +37,7 @@ dependencies:
   shared_preferences: 0.5.8
   redux: 4.0.0
   image_cropper: 1.2.3
-  image_picker: 0.6.5+2
+  image_picker: 0.6.2+3
   badges: ^1.1.1
   flutter_swiper: 1.1.6
   flutter_easyrefresh: ^2.1.1
