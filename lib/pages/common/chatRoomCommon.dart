@@ -47,13 +47,15 @@ class _ChatRoomCommonPageState extends State<ChatRoomCommonPage> with SingleTick
     this.setNameAndAvatar();
   }
 
-  void setNameAndAvatar() {
-    var memberInfo = FriendHelper.getBriefMemberInfos([this.widget.sessionId]);
-    var find = memberInfo[this.widget.sessionId];
-    this.nickName = find?.remark ?? find?.name;
-    this.avatar = find?.avatar;
-    this.ownAvatar = ReduxUtil.store.state.memberInfo.avatar;
-    this.ownMemberId = ReduxUtil.store.state.memberInfo.memberId;
+  void setNameAndAvatar() async {
+    await FriendHelper().cacheBriefMemberListToReduxBySessionId([this.widget.sessionId]);
+    var find = ReduxUtil.store.state.briefMemberInfo[this.widget.sessionId];
+    setState(() {
+      this.nickName = find?.remark ?? find?.name;
+      this.avatar = find?.avatar;
+      this.ownAvatar = ReduxUtil.store.state.memberInfo.avatar;
+      this.ownMemberId = ReduxUtil.store.state.memberInfo.memberId;
+    });
   }
 
   @override
@@ -105,21 +107,11 @@ class _ChatRoomCommonPageState extends State<ChatRoomCommonPage> with SingleTick
       ),
       body: StoreConnector<ReduxStore, Map<String, dynamic>>(
         onDidChange: (_data) {
-          Map<String, EnityBriefMemberInfo> brief = _data['briefInfo'];
-          if (brief[this.widget.sessionId]?.nameOrRemark != this.nickName) {
-            this.setState(() {
-              this.nickName = brief[this.widget.sessionId]?.nameOrRemark;
-            });
-          }
           this._scrollController.animateTo(this._scrollController.position.maxScrollExtent, duration: Duration(milliseconds: 100), curve: Curves.ease);
         },
-        converter: (store) => {
-          "messageEntity": store.state.roomMessageList ?? <EntityChatMessage>[],
-          "briefInfo": FriendHelper.getBriefMemberInfos([this.widget.sessionId])
-        },
+        converter: (store) => {"messageEntity": store.state.roomMessageList ?? <EntityChatMessage>[]},
         builder: (context, storeData) {
           List<EntityChatMessage> data = storeData['messageEntity'];
-          Map<String, EnityBriefMemberInfo> brief = storeData['briefInfo'];
           return Column(
             children: <Widget>[
               ListView.separated(
@@ -137,7 +129,7 @@ class _ChatRoomCommonPageState extends State<ChatRoomCommonPage> with SingleTick
                     },
                     beforeTime: index == 0 ? null : data[index - 1].time,
                     messageEntity: item,
-                    avatar: brief[this.widget.sessionId]?.avatar,
+                    avatar: this.avatar, // brief[this.widget.sessionId]?.avatar,
                     ownAvatar: this.ownAvatar,
                   );
                 },

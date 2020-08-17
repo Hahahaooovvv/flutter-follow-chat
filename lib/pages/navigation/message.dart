@@ -8,7 +8,6 @@ import 'package:follow/helper/friendHelper.dart';
 import 'package:follow/redux.dart';
 import 'package:follow/utils/chatMessageUtil.dart';
 import 'package:follow/utils/extensionUtil.dart';
-import 'package:follow/utils/messageUtil.dart';
 import 'package:follow/wiget/widgetAppbar.dart';
 import 'package:follow/wiget/widgetAvatar.dart';
 import 'package:follow/wiget/widgetBadge.dart';
@@ -26,7 +25,9 @@ class _MessagePageState extends State<MessagePage> with AutomaticKeepAliveClient
   void initState() {
     super.initState();
     ChatMessageUtil().cacheNewesMessageFromDBToReudx();
-    MessageUtil().getOfflineMessage();
+
+    /// TODO: 获取历史消息
+    // MessageUtil().getOfflineMessage();
   }
 
   @override
@@ -35,10 +36,7 @@ class _MessagePageState extends State<MessagePage> with AutomaticKeepAliveClient
     return Scaffold(
       appBar: WidgetAppbar(title: Text("最近消息")),
       body: StoreConnector<ReduxStore, Map<dynamic, dynamic>>(
-        converter: (store) => ({
-          "messageList": store.state.newesMessageList,
-          "briefInfo": FriendHelper.getBriefMemberInfos(store.state.newesMessageList.map((e) => e.message.sessionId).toList()),
-        }),
+        converter: (store) => ({"messageList": store.state.newesMessageList, "briefInfo": store.state.briefMemberInfo}),
         builder: (context, _data) {
           List<EntityNewesMessage> data = _data['messageList'];
           Map<String, EnityBriefMemberInfo> briefMemberInfo = _data["briefInfo"];
@@ -46,7 +44,6 @@ class _MessagePageState extends State<MessagePage> with AutomaticKeepAliveClient
             empty: data.length == 0,
             isScroll: false,
             method: () async {
-              await MessageUtil().getOfflineMessage();
               await ChatMessageUtil().cacheNewesMessageFromDBToReudx();
             },
             child: ListView.separated(

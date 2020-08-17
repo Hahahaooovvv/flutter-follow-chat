@@ -6,6 +6,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:follow/Entrance.dart';
 import 'package:follow/config.dart';
+import 'package:follow/helper/friendHelper.dart';
 import 'package:follow/redux.dart';
 import 'package:follow/utils/chineseLocalLizations.dart';
 import 'package:follow/utils/extensionUtil.dart';
@@ -15,7 +16,7 @@ import 'package:follow/utils/socketUtil.dart';
 import 'package:one_context/one_context.dart';
 import 'package:redux/redux.dart';
 
-void main() {
+void main() async {
   // ScreenUtil.init(width: 750, height: 1334, allowFontScaling: false);
   setDesignWHD(360.0, 640.0, density: 3);
   RequestHelper.initInstance();

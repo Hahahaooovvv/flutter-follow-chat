@@ -130,7 +130,11 @@ class EntityChatMessage {
     localStatus = json['localStatus'];
     msgType = json['msgType'];
     localId = json['localId'];
-    time = DateTime.fromMillisecondsSinceEpoch(json['time']);
+    if (json['time'] is int) {
+      time = DateTime.fromMillisecondsSinceEpoch(json['time']);
+    } else {
+      time = DateTime.fromMillisecondsSinceEpoch(int.tryParse(json['time']));
+    }
     atMembersId = json['atMembersId'];
     isRead = json['isRead'];
     isWithdraw = json['isWithdraw'];
@@ -157,23 +161,23 @@ class EntityChatMessage {
   }
 }
 
-extension EntityChatMessageExtension on List<EntityChatMessage> {
-  Map<String, dynamic> toSql() {
-    String strSql = "";
-    List<dynamic> data = [];
-    this.forEach((element) {
-      String keys = "";
-      String values = "";
-      var _json = element.toJson();
-      _json.keys.toList().forEach((e) {
-        if (_json[e] != null) {
-          keys += keys.isNotEmpty ? "," + e : e;
-          values += values.isNotEmpty ? ",?" : "?";
-          data.add(_json[e]);
-        }
-      });
-      strSql += "INSERT INTO CHAT_MSG($keys) VALUES($values);";
-    });
-    return {"sql": strSql, "data": data};
-  }
-}
+// extension EntityChatMessageExtension on List<EntityChatMessage> {
+//   Map<String, dynamic> toSql() {
+//     String strSql = "";
+//     List<dynamic> data = [];
+//     this.forEach((element) {
+//       String keys = "";
+//       String values = "";
+//       var _json = element.toJson();
+//       _json.keys.toList().forEach((e) {
+//         if (_json[e] != null) {
+//           keys += keys.isNotEmpty ? "," + e : e;
+//           values += values.isNotEmpty ? ",?" : "?";
+//           data.add(_json[e]);
+//         }
+//       });
+//       strSql += "INSERT INTO CHAT_MSG($keys) VALUES($values);";
+//     });
+//     return {"sql": strSql, "data": data};
+//   }
+// }

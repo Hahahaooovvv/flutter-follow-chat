@@ -3,8 +3,11 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:follow/entity/apis/entityFriendApi.dart';
 import 'package:follow/entity/notice/EntityChatMessage.dart';
 import 'package:follow/entity/notice/EntityNewesMessage.dart';
+import 'package:follow/helper/friendHelper.dart';
+import 'package:follow/helper/noticeHelper.dart';
 import 'package:follow/pages/common/chatRoomCommon.dart';
 import 'package:follow/redux.dart';
 import 'package:follow/utils/commonUtil.dart';
@@ -21,32 +24,30 @@ class ChatMessageUtil {
   void startChat(String sessionId) async {
     /// 首先读取db的数据 读取线上数据=>
     List<EntityChatMessage> _list = [];
-    var select = await SqlLiteHelper.dbInstance.rawQuery("select * from chat_msg where sessionId=? order by time", [sessionId]).toListMap();
+    var select = await SqlLiteUtil.dbInstance.rawQuery("select * from chat_msg where sessionId=? order by time", [sessionId]).toListMap();
     select.forEach((element) {
       var _obj = EntityChatMessage.fromJson(element);
       _list.add(_obj);
     });
-    // ReduxUtil.dispatch(ReduxActions.ROOM_MESSAGE, _list);
     ReduxUtil.dispatch(ReduxActions.CHAT_SESSION_ID, sessionId);
     await this.cacheToChatingRedux(_list);
+    FriendHelper().cacheBriefMemberListToReduxBySessionId([sessionId]);
     RouterUtil.push(CommonUtil.oneContext.context, ChatRoomCommonPage(sessionId: sessionId, isGroup: 0));
   }
 
   void endChat() {
     ReduxUtil.dispatch(ReduxActions.ROOM_MESSAGE, <EntityChatMessage>[]);
     ReduxUtil.dispatch(ReduxActions.CHAT_SESSION_ID, null);
+    this.cacheNewesMessageFromDBToReudx();
   }
-
-  /// 获取所有的未读消息
-  void getAllMessage() {}
 
   Future<List<EntityNewesMessage>> cacheNewesMessageFromDBToReudx() async {
     List<EntityNewesMessage> _list = [];
-    var select = await SqlLiteHelper.dbInstance.rawQuery('''
+    var select = await SqlLiteUtil.dbInstance.rawQuery('''
      SELECT
       stu.* ,ifnull(c1.onread,0) unread
     FROM
-      ( SELECT * FROM chat_msg ORDER BY time ) stu
+      ( SELECT * FROM chat_msg ORDER BY time DESC ) stu
     LEFT JOIN 
       (SELECT sessionId,COUNT(id) onread FROM chat_msg WHERE isRead=0 AND senderId!=? GROUP BY sessionId) c1 on c1.sessionId = stu.sessionId
     GROUP BY
@@ -59,6 +60,7 @@ class ChatMessageUtil {
         ..message = EntityChatMessage.fromJson(element)
         ..unread = element["unread"]);
     });
+    FriendHelper().cacheBriefMemberListToReduxBySessionId(_list.map((e) => e.message.sessionId).toList());
     ReduxUtil.dispatch(ReduxActions.NEWES_MESSAGE, _list);
     return _list;
   }
@@ -87,6 +89,15 @@ class ChatMessageUtil {
     // 存到redux
     this.cacheToChatingRedux([chatMessage]);
     // 发送给服务端
+  }
+
+  /// 接收消息
+  void receiveMessage(EntityChatMessage chatMessage) async {
+    // 存入数据库
+    await this.cacheMessageToDB([chatMessage]);
+    if (ReduxUtil.store.state.chatingSessionId != null) {
+      this.cacheNewesMessageFromDBToReudx();
+    }
   }
 
   Future<void> cacheToChatingRedux(List<EntityChatMessage> chatMessages) async {
@@ -152,31 +163,58 @@ class ChatMessageUtil {
         chatMessage[p] = chatMessage[p].merge(find);
       }
     });
-    var sqlInfo = chatMessage.toSql();
+    SqlUtilTemple sqlInfo = chatMessage.toList().getInsertDbTStr();
     if (!localMessage) await this.deleteMessageFromDB(ids);
-    await SqlLiteHelper.execute(sqlInfo["sql"], sqlInfo["data"]);
+    await SqlLiteUtil.execute(sqlInfo.sqlStr, sqlInfo.dataList);
   }
 
   /// 删除一些数据
   Future<void> deleteMessageFromDB(List<String> msgIds) async {
     var keys = List<String>.generate(msgIds.length, (index) => "?").join(",");
-    await SqlLiteHelper.execute("delete from chat_msg where msgId in($keys)", msgIds);
+    await SqlLiteUtil.execute("delete from chat_msg where msgId in($keys)", msgIds);
   }
 
   /// 删除一些数据
   Future<void> deleteMessageFromDBByLocalId(List<String> msgIds) async {
     var keys = List<String>.generate(msgIds.length, (index) => "?").join(",");
-    await SqlLiteHelper.execute("delete from chat_msg where localId in($keys)", msgIds);
+    await SqlLiteUtil.execute("delete from chat_msg where localId in($keys)", msgIds);
   }
 
   /// 从数据库里面获取一些东西
   Future<List<EntityChatMessage>> getMessageFromDB(List<String> msgIds) async {
     List<EntityChatMessage> _list = [];
     var keys = List<String>.generate(msgIds.length, (index) => "?").join(",");
-    var select = await SqlLiteHelper.dbInstance.rawQuery("select * from chat_msg where msgId in($keys)", msgIds).toListMap();
+    var select = await SqlLiteUtil.dbInstance.rawQuery("select * from chat_msg where msgId in($keys)", msgIds).toListMap();
     select.forEach((element) {
       _list.add(EntityChatMessage.fromJson(element));
     });
     return _list;
+  }
+
+  /// TODO: 需要优化socket的地方
+  /// 回复的好友添加消息
+  handleFriendRequestAck(EntityNoticeTemple temple) {
+    NoticeHelper().refreshNotice();
+    EntityFriendAddRec friendAddRec = EntityFriendAddRec.fromJson(temple.content);
+    String _status = "";
+    if (friendAddRec.status == 2) {
+      _status = "通过";
+      FriendHelper().getFriendList();
+    } else {
+      _status = "拒绝";
+    }
+    // ignore: unnecessary_brace_in_string_interps
+    String msg = "${friendAddRec.remark ?? friendAddRec.nickName}${_status}了你的好友请求";
+    CommonUtil.oneContext.showSnackBar(builder: (_context) {
+      return SnackBar(
+          content: Text(msg),
+          action: friendAddRec.status == 2
+              ? SnackBarAction(
+                  label: "发起聊天",
+                  onPressed: () {
+                    return ChatMessageUtil().startChat(temple.senderId);
+                  })
+              : null);
+    });
   }
 }

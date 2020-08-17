@@ -11,6 +11,7 @@ import 'package:follow/utils/commonUtil.dart';
 import 'package:follow/utils/modalUtils.dart';
 import 'package:follow/utils/reduxUtil.dart';
 import 'package:follow/utils/routerUtil.dart';
+import 'package:follow/utils/sqlLiteUtil.dart';
 
 class MemberHelper {
   /// 用户登录
@@ -25,6 +26,7 @@ class MemberHelper {
         if (memberInfo != null) {
           await this.cacheUserLoginToLocal(memberInfo);
           this.cacheMemberInfoToRedux(memberInfo);
+          await SqlLiteUtil().initSqlLite();
           RouterUtil.pushAndRemoveUntil(context, BottomNavigationBarPage());
         }
       });

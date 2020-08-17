@@ -40,6 +40,13 @@ class SocketUtil {
       EntityChatMessage chatMessage = EntityChatMessage.fromJson(arguments[0]);
       ChatMessageUtil().ackClientMessage(chatMessage);
     });
+
+    hubConnection.on("/message/client/chat", (arguments) {
+      print('socket-----------------------------');
+      print(arguments);
+      EntityChatMessage chatMessage = EntityChatMessage.fromJson(arguments[0]);
+      ChatMessageUtil().receiveMessage(chatMessage);
+    });
   }
 
   /// 链接

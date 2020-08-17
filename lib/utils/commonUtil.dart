@@ -6,7 +6,7 @@ import 'package:follow/entity/apis/entityFriendApi.dart';
 import 'package:follow/helper/friendHelper.dart';
 import 'package:follow/helper/memberHelper.dart';
 import 'package:follow/helper/noticeHelper.dart';
-import 'package:follow/utils/messageUtil.dart';
+import 'package:follow/utils/chatMessageUtil.dart';
 import 'package:follow/utils/modalUtils.dart';
 import 'package:follow/utils/routerUtil.dart';
 import 'package:follow/utils/sqlLiteUtil.dart';
@@ -34,16 +34,18 @@ class CommonUtil {
     return memberHelper.getMemberInfoFromLocal().then((value) async {
       if (value != null) {
         memberHelper.cacheMemberInfoToRedux(value);
-        await SqlLiteHelper().initSqlLite();
+        await SqlLiteUtil().initSqlLite();
+        // 获取简略信息
+        await FriendHelper().cacheBriefMemberListToRedux();
+        // await FriendHelper().cacheBriefMemberInfoListToRedux();
         // 初始化通知
         NoticeHelper().refreshNotice();
         FriendHelper().cacheToRedux();
         // 初始化好友通知
         FriendHelper().getFriendList();
-        MessageUtil.cacheToRedux();
+        // MessageUtil.cacheToRedux();
         RouterUtil.replace(context, BottomNavigationBarPage());
 
-        FriendHelper().cacheBriefMemberInfoListToRedux();
       }
       return value == null ? false : true;
     });
@@ -71,16 +73,8 @@ class CommonUtil {
         // 添加好友
         ModalUtil().ackFriendRequest(temple);
         break;
-      case 1:
-        // 发送消息过来了
-        MessageUtil.handleSocketMsg(temple);
-        break;
-      case 2:
-        // 自己发送的消息 然后后端确认已经发送
-        MessageUtil.handleSocketMsgAck(temple);
-        break;
       case 3:
-        MessageUtil().handleFriendRequestAck(temple);
+        ChatMessageUtil().handleFriendRequestAck(temple);
         break;
       //  被挤下线
       case 4:

@@ -38,7 +38,7 @@ class _WidgetChatImageState extends State<WidgetChatImage> with AutomaticKeepAli
     return ClipRRect(
       borderRadius: BorderRadius.circular(4),
       child: (this._file == null
-          ? CachedNetworkImage(imageUrl: this.widget.msg, width: 200, height: this.widget.height) //.tapExtension(this.widget.onImagePress)
+          ? CachedNetworkImage(imageUrl: this.widget.msg, width: 200, height: this.widget.height)
           : Image.memory(
               this._file.readAsBytesSync(),
               width: 200,
@@ -50,6 +50,12 @@ class _WidgetChatImageState extends State<WidgetChatImage> with AutomaticKeepAli
   @override
   bool get wantKeepAlive => true;
 }
+
+
+
+
+
+///---------------------------
 
 /// 语音
 class WidgetChatMessageSound extends StatefulWidget {

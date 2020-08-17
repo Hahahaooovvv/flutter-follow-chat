@@ -4,9 +4,9 @@ import 'package:follow/entity/apis/entityFriendApi.dart';
 import 'package:follow/helper/friendHelper.dart';
 import 'package:follow/helper/memberHelper.dart';
 import 'package:follow/helper/noticeHelper.dart';
+import 'package:follow/utils/chatMessageUtil.dart';
 import 'package:follow/utils/commonUtil.dart';
 import 'package:follow/utils/extensionUtil.dart';
-import 'package:follow/utils/messageUtil.dart';
 import 'package:follow/utils/toastUtil.dart';
 import 'package:follow/wiget/widgetPopSelectModal.dart';
 import 'package:loading_indicator/loading_indicator.dart';
@@ -128,7 +128,7 @@ class ModalUtil {
                     action: SnackBarAction(
                         label: "聊天",
                         onPressed: () {
-                          MessageUtil().startSession(CommonUtil.oneContext.context, friendAddRec.senderMemberId, false);
+                          ChatMessageUtil().startChat(friendAddRec.senderMemberId);
                         }));
               },
               child: Text("同意")),
