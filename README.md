@@ -7,38 +7,54 @@
 前端使用 Flutter 构建，后端使用 netcore，（因本人后端技术实在太垃圾，后端选择不开源 QAQ），使用 websocket 交互，未使用三方 IM，前台缓使`sqllite`缓存聊天信息。  
 本项目刚开始启动，作为一个从 0 开始的项目，我还有很多设想，会在职业生涯中慢慢完善。
 
-> 软件相册   
+> 软件相册
+
 <div style="display:flex" >
     <img src="https://github.com/ZhangDengchuan/flutter-follow-chat/blob/dev_zhangdengchuan/assets/cover.gif?raw=true" />
-<img src="https://github.com/ZhangDengchuan/flutter-follow-chat/blob/dev_zhangdengchuan/assets/friend.gif?raw=true" />
-<img src="https://github.com/ZhangDengchuan/flutter-follow-chat/blob/dev_zhangdengchuan/assets/read.gif?raw=true" />
+    <img src="https://github.com/ZhangDengchuan/flutter-follow-chat/blob/dev_zhangdengchuan/assets/friend.gif?raw=true" />
+    <img src="https://github.com/ZhangDengchuan/flutter-follow-chat/blob/dev_zhangdengchuan/assets/read.gif?raw=true" />
 </div>
 
 > 更新日志
 
-- v 1.0.1 (项目发布，基础聊天、更换头像、添加好友等)
+- v 1.0.2
 
-> 下版本预计目标
+- [x] 发送图片
+- [x] 点击之后滑动预览发送的图片
+- [x] 当 websocket 断开 发送消息失败时候有一个小红色的图标点击可从新发送
+- [x] 发送语音聊天
+- [x] 处理 websocket 心跳检测 (切换 SignlaR)
+- [x] 优化聊天储存逻辑，可以在多设备同步最近一个月的聊天数据
+- [x] 迁移到flutter新版本
+- [ ] 发送视频
 
-- [ ] 发送图片、视频消息
-- [ ] 发送语音聊天
-- [ ] 处理 websocket 心跳检测
+> 已知遗留问题
+
+- [ ] 聊天框来了新消息会闪一下（是想做成微信那样 直接提示有几条新消息，是在不知道怎么处理，求求各位大佬指点一下）
+- [ ] 好友列表未移植到sqllite
+- [ ] 视频消息
+
+> 下版本预计目标  
+
+- [ ] 视频消息
+- [ ] 修改密码
+- [ ] 修改签名
+- [ ] 好友动态
+- [ ] android更新程序
 
 
 
->  体验  
+> 体验
 
-android下载地址：http://wechat-demo-zdc.oss-cn-chengdu.aliyuncs.com/app/release/follow-1-0-1.apk
+android 下载地址：http://wechat-demo-zdc.oss-cn-chengdu.aliyuncs.com/app/release/follow-1-0-2.apk
 
-二维码：![下载地址](https://github.com/ZhangDengchuan/flutter-follow-chat/blob/dev_zhangdengchuan/assets/v-1-0-1.png?raw=true)
+二维码：![下载地址](https://github.com/ZhangDengchuan/flutter-follow-chat/blob/dev_zhangdengchuan/assets/v-1-0-2.png?raw=true)
 
+> 交流群
 
+QQ 群: 879108483
 
->  交流群  
-
-QQ群: 879108483
-
-> flutter环境  
+> flutter 环境
 
 ```
 [✓] Flutter (Channel master, 1.21.0-6.0.pre.40, on Mac OS X 10.15.1 19B2106, locale zh-Hans-CN)
@@ -77,4 +93,3 @@ QQ群: 879108483
 
 ! Doctor found issues in 1 category.
 ```
-

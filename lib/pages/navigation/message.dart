@@ -2,12 +2,11 @@ import 'package:flustars/flustars.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:follow/entity/member/ebriefMemberInfo.dart';
-import 'package:follow/entity/notice/messageEntity.dart';
-import 'package:follow/helper/friendHelper.dart';
+import 'package:follow/entity/notice/EntityChatMessage.dart';
+import 'package:follow/entity/notice/EntityNewesMessage.dart';
 import 'package:follow/redux.dart';
+import 'package:follow/utils/chatMessageUtil.dart';
 import 'package:follow/utils/extensionUtil.dart';
-import 'package:follow/utils/messageUtil.dart';
-import 'package:follow/utils/reduxUtil.dart';
 import 'package:follow/wiget/widgetAppbar.dart';
 import 'package:follow/wiget/widgetAvatar.dart';
 import 'package:follow/wiget/widgetBadge.dart';
@@ -24,7 +23,8 @@ class _MessagePageState extends State<MessagePage> with AutomaticKeepAliveClient
   @override
   void initState() {
     super.initState();
-    MessageUtil().getOfflineMessage();
+    ChatMessageUtil().cacheNewesMessageFromDBToReudx();
+    ChatMessageUtil().getNewesMsgFromServer();
   }
 
   @override
@@ -33,27 +33,25 @@ class _MessagePageState extends State<MessagePage> with AutomaticKeepAliveClient
     return Scaffold(
       appBar: WidgetAppbar(title: Text("最近消息")),
       body: StoreConnector<ReduxStore, Map<dynamic, dynamic>>(
-        converter: (store) => ({"messageList": store.state.messageList, "briefInfo": FriendHelper.getBriefMemberInfos(store.state.messageList.keys.toList())}),
+        converter: (store) => ({"messageList": store.state.newesMessageList, "briefInfo": store.state.briefMemberInfo}),
         builder: (context, _data) {
-          Map<String, List<MessageEntity>> data = _data['messageList'];
+          List<EntityNewesMessage> data = _data['messageList'];
           Map<String, EnityBriefMemberInfo> briefMemberInfo = _data["briefInfo"];
           return WidgetRefresh(
             empty: data.length == 0,
             isScroll: false,
             method: () async {
-              await MessageUtil().getOfflineMessage();
+              await ChatMessageUtil().getNewesMsgFromServer();
             },
             child: ListView.separated(
                 padding: EdgeInsets.zero,
                 itemBuilder: (context, index) {
-                  List<MessageEntity> item = data[data.keys.toList()[index]];
-                  List<MessageEntity> _item = item.deepCopy();
-                  _item.sort((a1, a2) => DateTime.parse(a2.senderTime).millisecondsSinceEpoch.compareTo(DateTime.parse(a1.senderTime).millisecondsSinceEpoch));
-                  MessageEntity element = _item[0];
+                  EntityNewesMessage item = data[index];
+                  EntityChatMessage element = item.message;
                   EnityBriefMemberInfo memberInfo = briefMemberInfo[element.sessionId];
                   return ListTile(
                     onTap: () {
-                      MessageUtil().startSession(context, element.sessionId, false);
+                      ChatMessageUtil().startChat(context, element.sessionId);
                     },
                     contentPadding: [8, 16].setPadding(),
                     leading: WidgetAvatar(
@@ -65,7 +63,7 @@ class _MessagePageState extends State<MessagePage> with AutomaticKeepAliveClient
                       children: [
                         Text(memberInfo?.remark ?? memberInfo?.nameOrRemark ?? "", style: TextStyle(fontSize: 16.setSp())),
                         Text(
-                          DateUtil.formatDateStr(element.senderTime, format: "MM-dd HH:mm"),
+                          DateUtil.formatDate(element.time, format: "MM-dd HH:mm"),
                           style: TextStyle(fontSize: 12.setSp(), color: Theme.of(context).textTheme.bodyText1.color.withAlpha(150)),
                         ),
                       ],
@@ -75,13 +73,13 @@ class _MessagePageState extends State<MessagePage> with AutomaticKeepAliveClient
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          element.msg,
+                          [element.msg, "[图片消息]", "[语音消息]"][element.msgType],
                           maxLines: 1,
                           style: Theme.of(context).textTheme.bodyText1.copyWith(fontSize: 14.setSp()),
                           overflow: TextOverflow.ellipsis,
                         ).flexExtension(),
                         WidgetBadge(
-                          noticeCount: _item.where((element) => element.isRead == 0 && element.senderId != ReduxUtil.store.state.memberInfo.memberId).length,
+                          noticeCount: item.unread,
                         )
                       ],
                     ),

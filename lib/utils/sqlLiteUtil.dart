@@ -1,54 +1,122 @@
+import 'package:flutter/material.dart';
+import 'package:follow/entity/member/ebriefMemberInfo.dart';
+import 'package:follow/entity/notice/EntityChatMessage.dart';
 import 'package:follow/utils/reduxUtil.dart';
 import 'package:sqflite/sqflite.dart';
 
-class SqlTemple {
-  String sqlStr;
-  List<dynamic> dataList;
+class SqlUtilTemple {
+  final String sqlStr;
+  final List<dynamic> dataList;
+
+  SqlUtilTemple({this.sqlStr, this.dataList});
+  // List<String> ids;
 }
 
-class SqlLiteHelper {
-  Database database;
+class SqlUtilTransactionTemple {
+  List<SqlUtilTemple> temple;
+  List<String> ids;
+}
 
-  Future<Database> openDataBase() async {
-    if (this.database != null) {
-      return this.database;
-    }
+enum SqlUtilConfigKey { NEWES_LIST, CHATING_MSG_LIST }
+
+class SqlLiteUtil {
+  static Database dbInstance;
+
+  /// 初始化sqllite
+  initSqlLite() async {
     var databasesPath = await getDatabasesPath();
     String path = databasesPath + "/chat_${ReduxUtil.store.state.memberInfo.memberId}.db";
-    Database database = await openDatabase(
+    print(path);
+    SqlLiteUtil.dbInstance = await openDatabase(
       path,
       version: 1,
       onCreate: (Database db, int version) async {
-        // chat_type 0 好友单聊
-        // msg_type 0 文本 1 图片 2 视屏  3 撤回消息
-        // status 0未送达 1已送达
-        // local_msg_id 消息送达后，后端会给前端回执是否发送成功
         await db.execute('''
-          CREATE TABLE chat_message (
-            id INTEGER PRIMARY KEY AUTOINCREMENT, 
-            sender_id TEXT, 
-            session_id TEXT,
-            chat_type INTEGER, 
-            is_read INTEGER,
-            sender_time TEXT,
-            msg_type INTEGER,
-            msg TEXT,
-            at_members TEXT,
-            status INTEGER,
-            msgId TEXT,
-            local_msg_id TEXT
-            )
-          ''');
+          CREATE TABLE "chat_msg" (
+          "id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+          "msgId" TEXT,
+          "sessionId" TEXT NOT NULL,
+          "chatType" INTEGER NOT NULL,
+          "msg" TEXT NOT NULL,
+          "status" INTEGER NOT NULL,
+          "localStatus" INTEGER NOT NULL,
+          "msgType" INTEGER NOT NULL,
+          "localId" TEXT,
+          "time" TEXT NOT NULL,
+          "atMembersId" TEXT,
+          "isRead" INTEGER NOT NULL DEFAULT 0,
+          "isWithdraw" INTEGER NOT NULL DEFAULT 0,
+          "senderId" TEXT NOT NULL
+          );
+      ''');
+        await db.execute('''
+         CREATE TABLE "system_config" (
+          "id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+          "config_key" TEXT NOT NULL,
+          "config_value" TEXT NOT NULL
+          );
+      ''');
+        await db.execute('''
+          CREATE TABLE "ebrief_info" (
+          "id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+          "sessionId" TEXT NOT NULL,
+          "name" TEXT NOT NULL,
+          "remark" TEXT,
+          "avatar" TEXT NOT NULL,
+          "isGroup" INTEGER NOT NULL
+          );
+      ''');
       },
     );
-    this.database = database;
-    return database;
   }
 
-  Future<void> closeDataBase() async {
-    if (this.database.isOpen) {
-      await this.database.close();
+  Future<void> setSystemConfig(
+    SqlUtilConfigKey enumKey, {
+    String suffix,
+    @required dynamic value,
+  }) async {
+    String key = this.buildConfigKey(enumKey, suffix);
+    await SqlLiteUtil.dbInstance.execute("DELETE FROM SYSTEM_CONFIG WHERE CONFIG_KEY=?;", [key]);
+    await SqlLiteUtil.dbInstance.execute("INSERT INTO SYSTEM_CONFIG(CONFIG_KEY,CONFIG_VALUE) VALUES(?,?)", [key, value]);
+  }
+
+  Future<dynamic> getSystemConfig(SqlUtilConfigKey enumKey, {String suffix}) async {
+    String key = this.buildConfigKey(enumKey, suffix);
+    var _map = this.getMapFromQueryData(await SqlLiteUtil.dbInstance.rawQuery("select config_value from SYSTEM_CONFIG where config_key=?", [key]));
+    if (_map.length > 0) {
+      return _map[0]["config_value"];
+    } else {
+      return null;
     }
+  }
+
+  String buildConfigKey(SqlUtilConfigKey enumKey, [String suffix]) {
+    switch (enumKey) {
+      case SqlUtilConfigKey.NEWES_LIST:
+        return "NEWES_LIST";
+      case SqlUtilConfigKey.CHATING_MSG_LIST:
+        return "CHATING_MSG_LIST_$suffix";
+      default:
+        return "";
+    }
+  }
+
+  static String getKeys(int length) {
+    return List<String>.generate(length, (index) => '?').join(",");
+  }
+
+  static Future<void> execute(String strSql, [List<dynamic> datas]) async {
+    await SqlLiteUtil.dbInstance.execute(strSql, datas ?? []);
+  }
+
+  String getTableNameFromListType<T>(List<T> list) {
+    String tableName = "";
+    if (list is List<EntityChatMessage>) {
+      tableName = "CHAT_MSG";
+    } else if (list is List<EnityBriefMemberInfo>) {
+      tableName = "EBRIEF_INFO";
+    }
+    return tableName;
   }
 
   /// 根据返回的数据获取map
@@ -60,5 +128,59 @@ class SqlLiteHelper {
       });
       return map;
     }).toList();
+  }
+
+  /// 批量执行
+  Future<void> transactions(List<SqlUtilTemple> sqlTemples) async {
+    if (sqlTemples.length > 0) {
+      await SqlLiteUtil.dbInstance.transaction((txn) async {
+        await Future.forEach<SqlUtilTemple>(sqlTemples, (element) async {
+          await txn.rawInsert(element.sqlStr, element.dataList);
+        });
+      });
+    }
+  }
+
+  /// 获取插入语句
+  SqlUtilTransactionTemple getInsertDbTStr<T>(List<T> list, {String tableName, String Function(T item) mapIds}) {
+    tableName ??= getTableNameFromListType(list);
+    List<String> ids = mapIds == null ? null : [];
+    List<SqlUtilTemple> _lists = [];
+    list.forEach((element) {
+      List<dynamic> data = [];
+      String keys = "";
+      String values = "";
+      var _json = (element as dynamic).toJson();
+      _json.keys.toList().forEach((e) {
+        if (_json[e] != null) {
+          keys += keys.isNotEmpty ? "," + e : e;
+          values += values.isNotEmpty ? ",?" : "?";
+          data.add(_json[e]);
+        }
+      });
+      if (mapIds != null) {
+        ids.add(mapIds(element));
+      }
+      _lists.add(SqlUtilTemple(sqlStr: "INSERT INTO $tableName($keys) VALUES($values);", dataList: data));
+    });
+    return SqlUtilTransactionTemple()
+      ..ids = ids
+      ..temple = _lists;
+  }
+
+  /// 获取List
+  Future<List<T>> getListFromDB<T>(String strSql, {List<dynamic> data, T Function(Map<String, dynamic> item) mapToList}) async {
+    List<Map<String, dynamic>> _query = SqlLiteUtil().getMapFromQueryData(await SqlLiteUtil.dbInstance.rawQuery(strSql, data));
+    List<T> _list = <T>[];
+    _query.forEach((element) {
+      _list.add(mapToList(element));
+    });
+    return _list;
+  }
+}
+
+extension SqlUtilExtension on Future<List<Map<String, dynamic>>> {
+  Future<List<Map<String, dynamic>>> toListMap() async {
+    return new SqlLiteUtil().getMapFromQueryData(await this);
   }
 }

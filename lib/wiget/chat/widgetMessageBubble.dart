@@ -10,19 +10,21 @@ class WidgetMessageBubble extends StatelessWidget {
     this.width,
     this.height,
     this.direction: WidgetMessageBubbleDirectionArrowType.left,
+    this.contentPadding,
   }) : super(key: key);
   final Widget child;
   final double width;
   final double height;
   final WidgetMessageBubbleDirectionArrowType direction;
+  final EdgeInsets contentPadding;
 
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
       child: Container(
-        padding: EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        padding: contentPadding ?? EdgeInsets.symmetric(vertical: 12, horizontal: 8),
         child: child ?? Container(),
-        constraints: BoxConstraints( maxWidth: 1.sWidth() - 162),
+        constraints: BoxConstraints(maxWidth: 1.sWidth() - 162),
         decoration: BoxDecoration(
           color: direction == WidgetMessageBubbleDirectionArrowType.left ? Colors.white : Color.fromARGB(255, 169, 232, 122),
           borderRadius: BorderRadius.circular(6),

@@ -6,11 +6,13 @@ import 'package:follow/entity/apis/entityFriendApi.dart';
 import 'package:follow/helper/friendHelper.dart';
 import 'package:follow/helper/memberHelper.dart';
 import 'package:follow/helper/noticeHelper.dart';
-import 'package:follow/utils/messageUtil.dart';
+import 'package:follow/utils/chatMessageUtil.dart';
 import 'package:follow/utils/modalUtils.dart';
 import 'package:follow/utils/routerUtil.dart';
+import 'package:follow/utils/sqlLiteUtil.dart';
 import 'package:one_context/one_context.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:vibration/vibration.dart';
 
 class CommonUtil {
   static OneContext get oneContext => _getContext();
@@ -20,22 +22,31 @@ class CommonUtil {
     return OneContext();
   }
 
+  /// 震动
+  static vibrate() async {
+    if (await Vibration.hasVibrator()) {
+      Vibration.vibrate(duration: 100);
+    }
+  }
+
   /// 初始化数据
   /// 每次进APP的时候在入口处调用
   Future<bool> initSystem(BuildContext context) async {
     MemberHelper memberHelper = new MemberHelper();
-    return memberHelper.getMemberInfoFromLocal().then((value) {
+    return memberHelper.getMemberInfoFromLocal().then((value) async {
       if (value != null) {
         memberHelper.cacheMemberInfoToRedux(value);
+        await SqlLiteUtil().initSqlLite();
+        // 获取简略信息
+        await FriendHelper().cacheBriefMemberListToRedux();
+        // await FriendHelper().cacheBriefMemberInfoListToRedux();
         // 初始化通知
         NoticeHelper().refreshNotice();
         FriendHelper().cacheToRedux();
         // 初始化好友通知
         FriendHelper().getFriendList();
-        MessageUtil.cacheToRedux();
+        // MessageUtil.cacheToRedux();
         RouterUtil.replace(context, BottomNavigationBarPage());
-
-        FriendHelper().cacheBriefMemberInfoListToRedux();
       }
       return value == null ? false : true;
     });
@@ -43,6 +54,7 @@ class CommonUtil {
 
   /// 等待组件渲染完成回调
   static whenRenderEnd(Function(Duration duration) func) {
+    // WidgetsBinding.instance.addPersistentFrameCallback(func);
     WidgetsBinding.instance.addPostFrameCallback(func);
   }
 
@@ -63,16 +75,8 @@ class CommonUtil {
         // 添加好友
         ModalUtil().ackFriendRequest(temple);
         break;
-      case 1:
-        // 发送消息过来了
-        MessageUtil.handleSocketMsg(temple);
-        break;
-      case 2:
-        // 自己发送的消息 然后后端确认已经发送
-        MessageUtil.handleSocketMsgAck(temple);
-        break;
       case 3:
-        MessageUtil().handleFriendRequestAck(temple);
+        ChatMessageUtil().handleFriendRequestAck(temple);
         break;
       //  被挤下线
       case 4:

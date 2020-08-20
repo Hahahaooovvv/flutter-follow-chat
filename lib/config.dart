@@ -18,7 +18,7 @@ class Config {
   static Config preInstance;
   Config._internal() {
     if (environmental == EConfigEnvironmental.dvevelopment) {
-      Config.mainApiUrl = "localhost:5000";
+      Config.mainApiUrl = "172.16.0.215:5000";
       apiUrlsConfig = ConfigApis(ws: "$wsProtocol${Config.mainApiUrl}", main: "$protocol${Config.mainApiUrl}");
     } else {
       apiUrlsConfig = ConfigApis(ws: "$wsProtocol${Config.mainApiUrl}/websocket", main: "$protocol${Config.mainApiUrl}");

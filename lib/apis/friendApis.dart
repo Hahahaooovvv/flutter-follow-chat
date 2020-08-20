@@ -81,7 +81,6 @@ class FriendApis {
   /// 获取好友列表
   Future<List<EntityFriendListInfo>> getFriendList() {
     return RequestHelper.request("/api/friend/list", RequestMethod.GET).then((value) {
-      // print('object');
       List<EntityFriendListInfo> _list = [];
       if (value.data.success) {
         value.data.data.forEach((p) {

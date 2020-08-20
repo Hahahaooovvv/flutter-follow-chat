@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:follow/pages/drawer/homeDrawer.dart';
 import 'package:follow/pages/navigation/friends.dart';
 import 'package:follow/pages/navigation/message.dart';
-import 'package:follow/utils/commonUtil.dart';
 import 'package:follow/utils/modalUtils.dart';
 import 'package:follow/utils/socketUtil.dart';
 
@@ -13,7 +12,7 @@ class BottomNavigationBarPage extends StatefulWidget {
   _BottomNavigationBarPageState createState() => _BottomNavigationBarPageState();
 }
 
-class _BottomNavigationBarPageState extends State<BottomNavigationBarPage> {
+class _BottomNavigationBarPageState extends State<BottomNavigationBarPage> with AutomaticKeepAliveClientMixin {
   final PageController _pageController = PageController();
   final GlobalKey<ScaffoldState> _scaffoldkey = new GlobalKey<ScaffoldState>();
 
@@ -23,14 +22,23 @@ class _BottomNavigationBarPageState extends State<BottomNavigationBarPage> {
   void initState() {
     super.initState();
     ModalUtil.scaffoldkey = this._scaffoldkey;
-    // 初始化socket
-    CommonUtil.whenRenderEnd((duration) {
-      SocketUtil.initSocket(context);
-    });
+    // socket链接
+    new SocketUtil().connect(true);
+  }
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    new SocketUtil().close();
   }
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       key: _scaffoldkey,
       drawer: HomeDrawer(),
@@ -43,8 +51,8 @@ class _BottomNavigationBarPageState extends State<BottomNavigationBarPage> {
           });
         },
         items: [
-          BottomNavigationBarItem(icon: Icon(Icons.message), title: Text("消息")),
-          BottomNavigationBarItem(icon: Icon(Icons.people), title: Text("联系人")),
+          BottomNavigationBarItem(icon: Icon(Icons.message), label: "消息"),
+          BottomNavigationBarItem(icon: Icon(Icons.people), label: "联系人"),
         ],
       ),
       body: PageView(
@@ -54,4 +62,7 @@ class _BottomNavigationBarPageState extends State<BottomNavigationBarPage> {
       ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

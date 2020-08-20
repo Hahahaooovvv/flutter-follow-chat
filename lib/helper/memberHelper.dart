@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:follow/Entrance.dart';
 import 'package:follow/apis/memberApi.dart';
 import 'package:follow/bottomNavigationBar.dart';
 import 'package:follow/entity/apis/entityMemberApi.dart';
@@ -11,12 +10,12 @@ import 'package:follow/utils/commonUtil.dart';
 import 'package:follow/utils/modalUtils.dart';
 import 'package:follow/utils/reduxUtil.dart';
 import 'package:follow/utils/routerUtil.dart';
-import 'package:follow/utils/socketUtil.dart';
+import 'package:follow/utils/sqlLiteUtil.dart';
+import 'package:follow/wiget/widgetRestart.dart';
 
 class MemberHelper {
   /// 用户登录
   void login(BuildContext context, String account, String password) async {
-    // String loginMemberId = await this.memberLoginId();
     if (account.length < 4) {
       ModalUtil.toastMessage("请输入正确的账号");
     } else if (password.length < 4) {
@@ -26,6 +25,7 @@ class MemberHelper {
         if (memberInfo != null) {
           await this.cacheUserLoginToLocal(memberInfo);
           this.cacheMemberInfoToRedux(memberInfo);
+          await SqlLiteUtil().initSqlLite();
           RouterUtil.pushAndRemoveUntil(context, BottomNavigationBarPage());
         }
       });
@@ -98,10 +98,9 @@ class MemberHelper {
       /// 清除登录记录
       await instance.remove(SharePreferencesKeys.USERLOGINID.toString());
 
-      new SocketUtil().close();
-
       /// 跳转到入口页面
-      await RouterUtil.pushAndRemoveUntil(context, EntrancePage(isFirst: false));
+      // await RouterUtil.pushAndRemoveUntil(context, EntrancePage(isFirst: false));
+      WidgetRestart.restartApp(context);
 
       /// 清除redux数据
       this.cacheMemberInfoToRedux(null);

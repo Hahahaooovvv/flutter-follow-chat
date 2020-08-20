@@ -48,5 +48,12 @@
 		<string>若不允许，您将无法使用图片保存和上传功能</string>
 		<key>NSPhotoLibraryUsageDescription</key>
 		<string>若不允许，您将无法使用图片保存和上传功能</string>
+		<key>NSMicrophoneUsageDescription</key>
+		<string>若不允许，您将无法发送语音消息</string>
+		<key>NSAppTransportSecurity</key>
+		<dict>
+			<key>NSAllowsArbitraryLoads</key>
+			<true />
+		</dict>
 	</dict>
 </plist>

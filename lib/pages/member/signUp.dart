@@ -18,7 +18,7 @@ class _SignUpPageState extends State<SignUpPage> {
   /// 性别
   int gender = 1;
 
-  String name = "陈晨";
+  String name = "沙雕";
   String account = "";
   String password = "";
   bool aggress = false;
@@ -59,7 +59,7 @@ class _SignUpPageState extends State<SignUpPage> {
             child: Stack(
               children: [
                 WidgetAvatar(url: this.getAvatar(), size: 90).tapExtension(() {
-                  new ImageUtil().upLoadAvatar(context).then((value) {
+                  new ImageUtil().uploadImg(context, clip: true).then((value) {
                     if (value != null) {
                       this.setState(() {
                         this.avatar = value;
@@ -94,7 +94,7 @@ class _SignUpPageState extends State<SignUpPage> {
             },
           ).paddingExtension(16.setPaddingAll()),
           WidgetInput(
-            inputFormatters: [LengthLimitingTextInputFormatter(12),  FilteringTextInputFormatter.allow(RegExp("[A-Za-z0-9]"))],
+            inputFormatters: [LengthLimitingTextInputFormatter(12), FilteringTextInputFormatter.allow(RegExp("[A-Za-z0-9]"))],
             hintText: "输入账号",
             prefixIcon: Icon(Icons.perm_identity),
             onChanged: (str) {
@@ -104,7 +104,7 @@ class _SignUpPageState extends State<SignUpPage> {
             },
           ).paddingExtension(EdgeInsets.fromLTRB(16.setWidth(), 0, 16.setWidth(), 16.setHeight())),
           WidgetInput(
-            inputFormatters: [LengthLimitingTextInputFormatter(16),  FilteringTextInputFormatter.allow(RegExp("[A-Za-z0-9\.]"))],
+            inputFormatters: [LengthLimitingTextInputFormatter(16), FilteringTextInputFormatter.allow(RegExp("[A-Za-z0-9\.]"))],
             hintText: "输入密码",
             prefixIcon: Icon(Icons.lock_outline),
             onChanged: (str) {

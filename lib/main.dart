@@ -11,17 +11,23 @@ import 'package:follow/utils/chineseLocalLizations.dart';
 import 'package:follow/utils/extensionUtil.dart';
 import 'package:follow/utils/reduxUtil.dart';
 import 'package:follow/utils/requestUtils.dart';
+import 'package:follow/utils/socketUtil.dart';
+import 'package:follow/wiget/widgetRestart.dart';
 import 'package:one_context/one_context.dart';
 import 'package:redux/redux.dart';
 
-void main() {
+void main() async {
   // ScreenUtil.init(width: 750, height: 1334, allowFontScaling: false);
   setDesignWHD(360.0, 640.0, density: 3);
   RequestHelper.initInstance();
   final store = new Store<ReduxStore>(iniReducer, initialState: ReduxStore());
   // 初始化config
   Config.instance;
-  runApp(MyApp(store: store));
+  // 初始化socket
+  SocketUtil().initSocket();
+  runApp(WidgetRestart(
+    child: MyApp(store: store),
+  ));
   SystemUiOverlayStyle systemUiOverlayStyle = SystemUiOverlayStyle(statusBarColor: Colors.transparent, statusBarBrightness: Brightness.dark);
   // if (Platform.isAndroid) {
   // 以下两行 设置android状态栏为透明的沉浸。写在组件渲染之后，是为了在渲染后进行set赋值，覆盖状态栏，写在渲染之前MaterialApp组件会覆盖掉这个值。
