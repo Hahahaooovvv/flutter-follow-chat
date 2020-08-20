@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 
 class Config {
   /// 当前环境
-  static EConfigEnvironmental environmental = EConfigEnvironmental.dvevelopment;
+  static EConfigEnvironmental environmental = EConfigEnvironmental.production;
 
   ///
-  static String mainApiUrl = "172.16.0.215:5000";
+  static String mainApiUrl = "172.81.212.120:10010";
   ConfigApis apiUrlsConfig;
   String appId = "0";
   String pid = "201903120228314";

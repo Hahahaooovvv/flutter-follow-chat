@@ -70,7 +70,7 @@ class ChatMessageUtil {
      SELECT
       stu.* ,ifnull(c1.onread,0) unread
     FROM
-      ( SELECT * FROM chat_msg ORDER BY time DESC ) stu
+      ( SELECT * FROM chat_msg ORDER BY time ${Platform.isAndroid ? "" : "DESC"} ) stu
     LEFT JOIN 
       (SELECT sessionId,COUNT(id) onread FROM chat_msg WHERE isRead=0 AND senderId!=? GROUP BY sessionId) c1 on c1.sessionId = stu.sessionId
     GROUP BY

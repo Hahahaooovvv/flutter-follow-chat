@@ -24,10 +24,10 @@ class ImageUtil {
       ], onSelect: (value) async {
         File image;
         if (value == "0") {
-          image = File((await picker.getImage(source: ImageSource.camera, maxWidth: maxWidth)).path);
+          image = File((await picker.getImage(source: ImageSource.camera, maxWidth: maxWidth))?.path);
           // image = await ImagePicker.pickImage(source: ImageSource.camera, maxWidth: maxWidth);
         } else {
-          image = File((await picker.getImage(source: ImageSource.gallery, maxWidth: maxWidth)).path);
+          image = File((await picker.getImage(source: ImageSource.gallery, maxWidth: maxWidth))?.path);
           // image = await ImagePicker.pickImage(source: ImageSource.gallery, maxWidth: maxWidth);
         }
         completer.complete(image);

@@ -11,15 +11,13 @@
 
 <div style="display:flex" >
     <img src="https://github.com/ZhangDengchuan/flutter-follow-chat/blob/dev_zhangdengchuan/assets/cover.gif?raw=true" />
-<img src="https://github.com/ZhangDengchuan/flutter-follow-chat/blob/dev_zhangdengchuan/assets/friend.gif?raw=true" />
-<img src="https://github.com/ZhangDengchuan/flutter-follow-chat/blob/dev_zhangdengchuan/assets/read.gif?raw=true" />
+    <img src="https://github.com/ZhangDengchuan/flutter-follow-chat/blob/dev_zhangdengchuan/assets/friend.gif?raw=true" />
+    <img src="https://github.com/ZhangDengchuan/flutter-follow-chat/blob/dev_zhangdengchuan/assets/read.gif?raw=true" />
 </div>
 
 > 更新日志
 
-- v 1.0.1 (项目发布，基础聊天、更换头像、添加好友等)
-
-> 下版本预计目标
+- v 1.0.2
 
 - [x] 发送图片
 - [x] 点击之后滑动预览发送的图片
@@ -27,13 +25,30 @@
 - [x] 发送语音聊天
 - [x] 处理 websocket 心跳检测 (切换 SignlaR)
 - [x] 优化聊天储存逻辑，可以在多设备同步最近一个月的聊天数据
+- [x] 迁移到flutter新版本
 - [ ] 发送视频
+
+> 已知遗留问题
+
+- [ ] 聊天框来了新消息会闪一下（是想做成微信那样 直接提示有几条新消息，是在不知道怎么处理，求求各位大佬指点一下）
+- [ ] 好友列表未移植到sqllite
+- [ ] 视频消息
+
+> 下版本预计目标  
+
+- [ ] 视频消息
+- [ ] 修改密码
+- [ ] 修改签名
+- [ ] 好友动态
+- [ ] android更新程序
+
+
 
 > 体验
 
-android 下载地址：http://wechat-demo-zdc.oss-cn-chengdu.aliyuncs.com/app/release/follow-1-0-1.apk
+android 下载地址：http://wechat-demo-zdc.oss-cn-chengdu.aliyuncs.com/app/release/follow-1-0-2.apk
 
-二维码：![下载地址](https://github.com/ZhangDengchuan/flutter-follow-chat/blob/dev_zhangdengchuan/assets/v-1-0-1.png?raw=true)
+二维码：![下载地址](https://github.com/ZhangDengchuan/flutter-follow-chat/blob/dev_zhangdengchuan/assets/v-1-0-2.png?raw=true)
 
 > 交流群
 
