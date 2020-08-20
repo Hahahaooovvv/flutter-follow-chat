@@ -119,8 +119,7 @@ class _MemnerInfoPageState extends State<MemnerInfoPage> {
                                           name: this.friendInfo.nickName,
                                         ));
                                   } else {
-                                    ChatMessageUtil().startChat(this.widget.memberId);
-                                    // MessageUtil().startSession(context, this.widget.memberId, false);
+                                    ChatMessageUtil().startChat(context, this.widget.memberId);
                                   }
                                 },
                                 width: 100.setWidth(),

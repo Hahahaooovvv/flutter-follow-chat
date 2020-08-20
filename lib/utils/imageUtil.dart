@@ -13,8 +13,10 @@ class ImageUtil {
   /// 选择照片
   Future<File> selectImagePopSelect(BuildContext context, {ImageSource source, double maxWidth: 500}) async {
     Completer<File> completer = Completer();
+    final picker = ImagePicker();
     if (source != null) {
-      completer.complete(await ImagePicker.pickImage(source: source));
+      completer.complete(File((await picker.getImage(source: source, maxWidth: maxWidth)).path));
+      // completer.complete(await ImagePicker.pickImage(source: source));
     } else {
       ModalUtil.showPopSelect<String>(context, children: [
         WidgetPopSelectModalItem(childStr: "拍照", value: "0"),
@@ -22,9 +24,11 @@ class ImageUtil {
       ], onSelect: (value) async {
         File image;
         if (value == "0") {
-          image = await ImagePicker.pickImage(source: ImageSource.camera, maxWidth: maxWidth);
+          image = File((await picker.getImage(source: ImageSource.camera, maxWidth: maxWidth)).path);
+          // image = await ImagePicker.pickImage(source: ImageSource.camera, maxWidth: maxWidth);
         } else {
-          image = await ImagePicker.pickImage(source: ImageSource.gallery, maxWidth: maxWidth);
+          image = File((await picker.getImage(source: ImageSource.gallery, maxWidth: maxWidth)).path);
+          // image = await ImagePicker.pickImage(source: ImageSource.gallery, maxWidth: maxWidth);
         }
         completer.complete(image);
       });

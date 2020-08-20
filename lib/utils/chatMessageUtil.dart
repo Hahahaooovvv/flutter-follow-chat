@@ -1,8 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:follow/apis/memberApi.dart';
 import 'package:follow/apis/msgApis.dart';
 import 'package:follow/entity/apis/entityFriendApi.dart';
 import 'package:follow/entity/notice/EntityChatMessage.dart';
@@ -22,21 +23,42 @@ import 'package:follow/utils/sqlLiteUtil.dart';
 
 class ChatMessageUtil {
   /// 开始聊天
-  void startChat(String sessionId) async {
+  void startChat(BuildContext context, String sessionId) async {
     /// 首先读取db的数据 读取线上数据=>
+    List<EntityChatMessage> _list = await this.getChatMsgFromPage(sessionId, limit: 15, offset: 0);
+    ReduxUtil.dispatch(ReduxActions.CHAT_SESSION_ID, sessionId);
+    await this.cacheToChatingRedux(_list);
+    this.getChatingMsgFromServer(sessionId);
+    FriendHelper().cacheBriefMemberListToReduxBySessionId([sessionId]);
+    RouterUtil.push(context, ChatRoomCommonPage(sessionId: sessionId, isGroup: 0));
+  }
+
+  /// 本地加载更多消息
+  Future<void> loadMoreChatingMsgs({String sessionId, int limit, int offset}) async {
+    ReduxStore state = ReduxUtil.store.state;
+    sessionId ??= state.chatingSessionId;
+    limit ??= 15;
+    offset ??= state.roomMessageList.length;
+    List<EntityChatMessage> _list = await this.getChatMsgFromPage(sessionId, limit: 15, offset: offset);
+    await this.cacheToChatingRedux(_list);
+  }
+
+  /// 分页获取聊天消息
+  Future<List<EntityChatMessage>> getChatMsgFromPage(String sessionId, {int limit, int offset}) async {
     List<EntityChatMessage> _list = [];
-    var select = await SqlLiteUtil.dbInstance.rawQuery("select * from chat_msg where sessionId=? order by time", [sessionId]).toListMap();
+    String strSql = "select * from chat_msg where sessionId=? order by time Desc limit $limit offset $offset";
+    var select = await SqlLiteUtil.dbInstance.rawQuery(strSql, [sessionId]).toListMap();
     select.forEach((element) {
       var _obj = EntityChatMessage.fromJson(element);
       _list.add(_obj);
     });
-    ReduxUtil.dispatch(ReduxActions.CHAT_SESSION_ID, sessionId);
-    await this.cacheToChatingRedux(_list);
-    FriendHelper().cacheBriefMemberListToReduxBySessionId([sessionId]);
-    RouterUtil.push(CommonUtil.oneContext.context, ChatRoomCommonPage(sessionId: sessionId, isGroup: 0));
+    return _list;
   }
 
-  void endChat() {
+  void endChat() async {
+    var _sessionId = ReduxUtil.store.state.chatingSessionId;
+    MemberApi().isRead(_sessionId);
+    await SqlLiteUtil.dbInstance.execute("update chat_msg set isRead=1 where sessionId=?", [_sessionId]);
     ReduxUtil.dispatch(ReduxActions.ROOM_MESSAGE, <EntityChatMessage>[]);
     ReduxUtil.dispatch(ReduxActions.CHAT_SESSION_ID, null);
     this.cacheNewesMessageFromDBToReudx();
@@ -72,15 +94,28 @@ class ChatMessageUtil {
       await SqlLiteUtil().setSystemConfig(SqlUtilConfigKey.NEWES_LIST, value: DateTime.fromMillisecondsSinceEpoch(value.time).toString());
       await this.cacheMessageToDB(value.list);
       await this.cacheNewesMessageFromDBToReudx();
+      // 缓存头像
+      FriendHelper().cacheBriefMemberListToReduxBySessionId(value.list.map((e) => e.sessionId).toList());
+    });
+  }
+
+  /// 获取线上的聊天数据
+  Future<void> getChatingMsgFromServer(String sessionId) async {
+    await MsgApis().getChatingMsgList(sessionId).then((value) async {
+      await SqlLiteUtil().setSystemConfig(SqlUtilConfigKey.CHATING_MSG_LIST, suffix: sessionId, value: DateTime.fromMillisecondsSinceEpoch(value.time).toString());
+      await this.cacheMessageToDB(value.list);
+      await this.cacheToChatingRedux(value.list);
+      // 缓存头像
+      FriendHelper().cacheBriefMemberListToReduxBySessionId(value.list.map((e) => e.sessionId).toList());
     });
   }
 
   /// 发送聊天消息
-  void sendMessage(EntityChatMessage chatMessage) async {
+  Future<void> sendMessage(EntityChatMessage chatMessage) async {
     if (chatMessage.msgType != 0) {
       // 需要上传文件
       chatMessage.localStatus = 1;
-      FileUtil().fileUpload(chatMessage.localId, filePath: chatMessage.msg, fileType: chatMessage.msgType).then((value) {
+      FileUtil().fileUpload(chatMessage.localId, filePath: chatMessage.msg, fileType: chatMessage.msgType, extend: chatMessage.extend).then((value) {
         this.cacheToChatingRedux([chatMessage]);
         // 上传完毕后删除
         value.response.then((_value) {
@@ -98,7 +133,7 @@ class ChatMessageUtil {
     // 存到数据库
     this.cacheMessageToDB([chatMessage]);
     // 存到redux
-    this.cacheToChatingRedux([chatMessage]);
+    await this.cacheToChatingRedux([chatMessage]);
     // 发送给服务端
   }
 
@@ -106,12 +141,17 @@ class ChatMessageUtil {
   void receiveMessage(EntityChatMessage chatMessage) async {
     // 存入数据库
     await this.cacheMessageToDB([chatMessage]);
-    if (ReduxUtil.store.state.chatingSessionId != null) {
+    if (ReduxUtil.store.state.chatingSessionId == null) {
       this.cacheNewesMessageFromDBToReudx();
+    } else {
+      this.cacheToChatingRedux([chatMessage]);
     }
   }
 
   Future<void> cacheToChatingRedux(List<EntityChatMessage> chatMessages) async {
+    if (chatMessages.length == 0) {
+      return;
+    }
     // 如果ID是一样的 就存入redux
     List<EntityChatMessage> data = ReduxUtil.store.state.roomMessageList.deepCopy();
     await Future.forEach<EntityChatMessage>(chatMessages, (element) async {
@@ -124,14 +164,26 @@ class ChatMessageUtil {
             element.file = File(element.msg);
           }
           element.streamController = FileUtil.messageStreamControllers.firstWhere((_element) => _element.id == element.localId, orElse: () => null)?.streamController;
-          if (element.msgType == 1) {
-            // 如果是图片
-            if (element.msg.startsWith("http")) {
-              List<double> widthList = RegExp(r"\d*x\d*").stringMatch(element.msg).split("x").map((e) => double.parse(e)).toList();
-              element.extend = EntityChatMessageExtend()..size = Size(200, widthList[1] / (widthList[0] / 200));
-            } else {
-              var _size = await ImageUtil().getImageSize(File(element.msg));
-              element.extend = EntityChatMessageExtend()..size = Size(200, _size.height / (_size.width / 200));
+          if (element.extend == null) {
+            if (element.msgType == 1) {
+              // 如果是图片
+              if (element.msg.startsWith("http")) {
+                List<double> widthList = RegExp(r"\d*x\d*").stringMatch(element.msg).split("x").map((e) => double.parse(e)).toList();
+                element.extend = EntityChatMessageExtend()..size = Size(200, widthList[1] / (widthList[0] / 200));
+              } else {
+                var _size = await ImageUtil().getImageSize(File(element.msg));
+                element.extend = EntityChatMessageExtend()..size = Size(200, _size.height / (_size.width / 200));
+              }
+            } else if (element.msgType == 2) {
+              // 如果是语音
+              if (element.msg.startsWith("http")) {
+                int duration = int.tryParse(RegExp(r"(?<=_)\d*(?=\.)").stringMatch(element.msg) ?? "0") ?? 0;
+                element.extend = EntityChatMessageExtend()..duration = duration;
+              } else {
+                AudioPlayer audioPlayer = AudioPlayer();
+                await audioPlayer.setUrl(element.msg, isLocal: audioPlayer.isLocalUrl(element.msg));
+                element.extend = EntityChatMessageExtend()..duration = await audioPlayer.getDuration();
+              }
             }
           }
         }
@@ -146,7 +198,7 @@ class ChatMessageUtil {
         }
       }
       // 排序
-      data.sort((b1, a1) => b1.time.millisecondsSinceEpoch.compareTo(a1.time.millisecondsSinceEpoch));
+      data.sort((a1, b1) => b1.time.millisecondsSinceEpoch.compareTo(a1.time.millisecondsSinceEpoch));
     });
     // chatMessages.forEach();
     ReduxUtil.dispatch(ReduxActions.ROOM_MESSAGE, data);
@@ -174,9 +226,11 @@ class ChatMessageUtil {
         chatMessage[p] = chatMessage[p].merge(find);
       }
     });
-    SqlUtilTemple sqlInfo = chatMessage.toList().getInsertDbTStr();
+    SqlUtilTransactionTemple sqlInfo = chatMessage.toList().getInsertDbTStr();
     if (!localMessage) await this.deleteMessageFromDB(ids);
-    await SqlLiteUtil.execute(sqlInfo.sqlStr, sqlInfo.dataList);
+    await SqlLiteUtil().transactions(sqlInfo.temple);
+    // var i = await SqlLiteUtil.dbInstance.rawInsert(sqlInfo.sqlStr, sqlInfo.dataList);
+    // print(i);
   }
 
   /// 删除一些数据
@@ -223,7 +277,7 @@ class ChatMessageUtil {
               ? SnackBarAction(
                   label: "发起聊天",
                   onPressed: () {
-                    return ChatMessageUtil().startChat(temple.senderId);
+                    return ChatMessageUtil().startChat(_context, temple.senderId);
                   })
               : null);
     });

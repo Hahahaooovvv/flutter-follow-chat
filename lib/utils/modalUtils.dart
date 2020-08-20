@@ -41,7 +41,7 @@ class ModalUtil {
     ModalUtil.scaffoldkey.currentState.openEndDrawer();
   }
 
-  static showLoading() {
+   static showLoading() {
     dismissLoading();
     loadingContext = CommonUtil.oneContext.context;
     showDialog(
@@ -128,7 +128,7 @@ class ModalUtil {
                     action: SnackBarAction(
                         label: "聊天",
                         onPressed: () {
-                          ChatMessageUtil().startChat(friendAddRec.senderMemberId);
+                          ChatMessageUtil().startChat(context, friendAddRec.senderMemberId);
                         }));
               },
               child: Text("同意")),

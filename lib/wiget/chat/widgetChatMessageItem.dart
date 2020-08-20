@@ -63,7 +63,11 @@ class _WidgetChatMessageItemState extends State<WidgetChatMessageItem> with Auto
           this.widget.onImagePress();
         });
       case 2:
-        return WidgetChatMessageSound(sound: this.widget.messageEntity.msg);
+        return WidgetChatMessageSound(
+          sound: this.widget.messageEntity.msg,
+          duration: this.widget.messageEntity.extend.duration,
+          isOwn: this.widget.messageEntity.senderId == ReduxUtil.store.state.memberInfo.memberId,
+        );
       default:
         return Container();
     }

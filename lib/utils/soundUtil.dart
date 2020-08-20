@@ -53,7 +53,7 @@ class SoundUtil {
   startPalyer([String path]) async {
     path ??= this.path;
     AudioPlayer audioPlayer = AudioPlayer();
-    print(await audioPlayer.play(path, isLocal: audioPlayer.isLocalUrl(path)));
+    await audioPlayer.play(path, isLocal: audioPlayer.isLocalUrl(path));
     audioPlayer.onPlayerCompletion.listen((event) {
       print("播放结束");
     });

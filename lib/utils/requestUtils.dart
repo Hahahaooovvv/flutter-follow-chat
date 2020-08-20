@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:io';
-
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:follow/config.dart';
+import 'package:follow/entity/notice/EntityChatMessage.dart';
 import 'package:follow/utils/imageUtil.dart';
 import 'package:follow/utils/modalUtils.dart';
 import 'package:follow/utils/reduxUtil.dart';
@@ -75,22 +75,31 @@ class RequestHelper {
   }
 
   /// 文件上传
-  static Future<EntityFileUpload> fileUpLoad({
-    String url: "/api/Member/upload",
-    @required String filePath,
-    // @required MultipartFile mltipartFile,
-    @required int fileType,
-  }) async {
+  static Future<EntityFileUpload> fileUpLoad(
+      {String url: "/api/Member/upload",
+      @required String filePath,
+      // @required MultipartFile mltipartFile,
+      @required int fileType,
+      EntityChatMessageExtend extend}) async {
     Size _size = Size(0, 0);
+    int duration = 0;
     if (fileType == 1) {
       // 图片
       _size = await ImageUtil().getImageSize(File(filePath));
+    } else if (fileType == 2) {
+      duration = extend.duration;
+      // AudioPlayer audioPlayer = AudioPlayer();
+      // await audioPlayer.setUrl(filePath, isLocal: audioPlayer.isLocalUrl(filePath));
+      // duration = await audioPlayer.getDuration();
+      // print('-----------');
+      // print(duration);
     }
     var _formData = FormData.fromMap({
       "fileType": fileType,
       "files": MultipartFile.fromFileSync(filePath),
       "width": _size.width,
       "height": _size.height,
+      "duration": duration,
     });
 
     StreamController<double> streamController = new StreamController<double>.broadcast();

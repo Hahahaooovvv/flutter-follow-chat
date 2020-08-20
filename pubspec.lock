@@ -166,7 +166,7 @@ packages:
       name: flutter_easyrefresh
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "2.1.1"
+    version: "2.1.5"
   flutter_localizations:
     dependency: "direct main"
     description: flutter
@@ -179,6 +179,13 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "0.0.3"
+  flutter_plugin_android_lifecycle:
+    dependency: transitive
+    description:
+      name: flutter_plugin_android_lifecycle
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.0.8"
   flutter_redux:
     dependency: "direct main"
     description:
@@ -216,7 +223,7 @@ packages:
       name: http
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "0.12.1"
+    version: "0.12.2"
   http_parser:
     dependency: transitive
     description:
@@ -237,7 +244,14 @@ packages:
       name: image_picker
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "0.6.2+3"
+    version: "0.6.7+4"
+  image_picker_platform_interface:
+    dependency: transitive
+    description:
+      name: image_picker_platform_interface
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.1.0"
   intl:
     dependency: transitive
     description:
@@ -251,7 +265,7 @@ packages:
       name: just_audio
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "0.3.1"
+    version: "0.3.3"
   loading_indicator:
     dependency: "direct main"
     description:
@@ -335,7 +349,7 @@ packages:
       name: pedantic
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "1.9.0"
+    version: "1.9.2"
   platform:
     dependency: transitive
     description:
@@ -523,13 +537,13 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "2.1.0-nullsafety.2"
-  vibrate:
+  vibration:
     dependency: "direct main"
     description:
-      name: vibrate
+      name: vibration
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "0.0.4"
+    version: "1.4.0"
   w3c_event_source:
     dependency: transitive
     description:

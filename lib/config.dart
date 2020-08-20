@@ -5,7 +5,7 @@ class Config {
   static EConfigEnvironmental environmental = EConfigEnvironmental.dvevelopment;
 
   ///
-  static String mainApiUrl = "127.0.0.1:5000"; //"172.81.212.120:10010";
+  static String mainApiUrl = "172.16.0.215:5000";
   ConfigApis apiUrlsConfig;
   String appId = "0";
   String pid = "201903120228314";
@@ -18,7 +18,7 @@ class Config {
   static Config preInstance;
   Config._internal() {
     if (environmental == EConfigEnvironmental.dvevelopment) {
-      Config.mainApiUrl = "127.0.0.1:5000";
+      Config.mainApiUrl = "172.16.0.215:5000";
       apiUrlsConfig = ConfigApis(ws: "$wsProtocol${Config.mainApiUrl}", main: "$protocol${Config.mainApiUrl}");
     } else {
       apiUrlsConfig = ConfigApis(ws: "$wsProtocol${Config.mainApiUrl}/websocket", main: "$protocol${Config.mainApiUrl}");

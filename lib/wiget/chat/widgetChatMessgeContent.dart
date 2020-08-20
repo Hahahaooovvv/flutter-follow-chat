@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flustars/flustars.dart';
 import 'package:flutter/material.dart';
 import 'package:follow/utils/extensionUtil.dart';
 import 'package:lottie/lottie.dart';
@@ -51,18 +52,21 @@ class _WidgetChatImageState extends State<WidgetChatImage> with AutomaticKeepAli
   bool get wantKeepAlive => true;
 }
 
-
-
-
-
 ///---------------------------
 
 /// 语音
 class WidgetChatMessageSound extends StatefulWidget {
-  WidgetChatMessageSound({Key key, @required this.sound}) : super(key: key);
+  WidgetChatMessageSound({
+    Key key,
+    @required this.sound,
+    @required this.isOwn,
+    @required this.duration,
+  }) : super(key: key);
   @override
   _WidgetChatMessageSoundState createState() => _WidgetChatMessageSoundState();
   final String sound;
+  final bool isOwn;
+  final int duration;
 }
 
 class _WidgetChatMessageSoundState extends State<WidgetChatMessageSound> with SingleTickerProviderStateMixin {
@@ -94,10 +98,23 @@ class _WidgetChatMessageSoundState extends State<WidgetChatMessageSound> with Si
 
   @override
   Widget build(BuildContext context) {
-    return Lottie.asset(
-      'lib/assets/lottie/sound.json',
-      height: 50,
-      animate: animate,
+    return Row(
+      textDirection: !this.widget.isOwn ? TextDirection.ltr : TextDirection.rtl,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          DateUtil.formatDateMs(this.widget.duration, format: "mm'ss"),
+          style: TextStyle(
+            fontSize: 12.setSp(),
+            color: this.widget.isOwn ? Colors.white : Theme.of(context).textTheme.bodyText1.color,
+          ),
+        ).paddingExtension(EdgeInsets.only(left: 4.setSp())),
+        Lottie.asset(
+          'lib/assets/lottie/sound.json',
+          height: 50,
+          animate: animate,
+        )
+      ],
     ).tapExtension(() {
       this.togale();
     });

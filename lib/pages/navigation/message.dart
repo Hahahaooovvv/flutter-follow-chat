@@ -51,7 +51,7 @@ class _MessagePageState extends State<MessagePage> with AutomaticKeepAliveClient
                   EnityBriefMemberInfo memberInfo = briefMemberInfo[element.sessionId];
                   return ListTile(
                     onTap: () {
-                      ChatMessageUtil().startChat(element.sessionId);
+                      ChatMessageUtil().startChat(context, element.sessionId);
                     },
                     contentPadding: [8, 16].setPadding(),
                     leading: WidgetAvatar(
@@ -73,11 +73,7 @@ class _MessagePageState extends State<MessagePage> with AutomaticKeepAliveClient
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          [
-                            element.msg,
-                            "[图片消息]",
-                            "[视频消息]"
-                          ][element.msgType],
+                          [element.msg, "[图片消息]", "[语音消息]"][element.msgType],
                           maxLines: 1,
                           style: Theme.of(context).textTheme.bodyText1.copyWith(fontSize: 14.setSp()),
                           overflow: TextOverflow.ellipsis,

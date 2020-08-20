@@ -173,10 +173,11 @@ class FriendHelper {
     if (list.length == 0) {
       return;
     }
-    SqlUtilTemple sqlUtilTemple = list.getInsertDbTStr(mapIds: (item) => item.sessionId);
-    String keys = List<String>.generate(sqlUtilTemple.ids.length, (index) => "?").join(",");
+    SqlUtilTransactionTemple sqlUtilTemple = list.getInsertDbTStr(mapIds: (item) => item.sessionId);
+    String keys = SqlLiteUtil.getKeys(sqlUtilTemple.ids.length);
     await SqlLiteUtil.dbInstance.execute("delete from ebrief_info where  sessionId in($keys)", sqlUtilTemple.ids);
-    await SqlLiteUtil.dbInstance.execute(sqlUtilTemple.sqlStr, sqlUtilTemple.dataList);
+    // await SqlLiteUtil.dbInstance.execute(sqlUtilTemple.sqlStr, sqlUtilTemple.dataList);
+    await SqlLiteUtil().transactions(sqlUtilTemple.temple);
   }
 
   /// 通过ID缓存到redux 中间会检查是否有头像

@@ -12,7 +12,7 @@ class BottomNavigationBarPage extends StatefulWidget {
   _BottomNavigationBarPageState createState() => _BottomNavigationBarPageState();
 }
 
-class _BottomNavigationBarPageState extends State<BottomNavigationBarPage> {
+class _BottomNavigationBarPageState extends State<BottomNavigationBarPage> with AutomaticKeepAliveClientMixin {
   final PageController _pageController = PageController();
   final GlobalKey<ScaffoldState> _scaffoldkey = new GlobalKey<ScaffoldState>();
 
@@ -25,16 +25,20 @@ class _BottomNavigationBarPageState extends State<BottomNavigationBarPage> {
     // socket链接
     new SocketUtil().connect(true);
   }
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+  }
 
   @override
   void dispose() {
     super.dispose();
-    print("socket已经断开");
     new SocketUtil().close();
   }
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       key: _scaffoldkey,
       drawer: HomeDrawer(),
@@ -58,4 +62,7 @@ class _BottomNavigationBarPageState extends State<BottomNavigationBarPage> {
       ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

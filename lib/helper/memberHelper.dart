@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:follow/Entrance.dart';
 import 'package:follow/apis/memberApi.dart';
 import 'package:follow/bottomNavigationBar.dart';
 import 'package:follow/entity/apis/entityMemberApi.dart';
@@ -12,11 +11,11 @@ import 'package:follow/utils/modalUtils.dart';
 import 'package:follow/utils/reduxUtil.dart';
 import 'package:follow/utils/routerUtil.dart';
 import 'package:follow/utils/sqlLiteUtil.dart';
+import 'package:follow/wiget/widgetRestart.dart';
 
 class MemberHelper {
   /// 用户登录
   void login(BuildContext context, String account, String password) async {
-    // String loginMemberId = await this.memberLoginId();
     if (account.length < 4) {
       ModalUtil.toastMessage("请输入正确的账号");
     } else if (password.length < 4) {
@@ -100,7 +99,8 @@ class MemberHelper {
       await instance.remove(SharePreferencesKeys.USERLOGINID.toString());
 
       /// 跳转到入口页面
-      await RouterUtil.pushAndRemoveUntil(context, EntrancePage(isFirst: false));
+      // await RouterUtil.pushAndRemoveUntil(context, EntrancePage(isFirst: false));
+      WidgetRestart.restartApp(context);
 
       /// 清除redux数据
       this.cacheMemberInfoToRedux(null);

@@ -158,7 +158,7 @@ extension DynamicListExtensionUtils<T> on List<T> {
   }
 
   /// 通过列表获取插入语句
-  SqlUtilTemple getInsertDbTStr({String Function(T) mapIds}) {
+  SqlUtilTransactionTemple getInsertDbTStr({String Function(T) mapIds}) {
     return SqlLiteUtil().getInsertDbTStr<T>(this, mapIds: mapIds);
   }
   

@@ -18,7 +18,7 @@ class _SignUpPageState extends State<SignUpPage> {
   /// 性别
   int gender = 1;
 
-  String name = "陈晨";
+  String name = "沙雕";
   String account = "";
   String password = "";
   bool aggress = false;

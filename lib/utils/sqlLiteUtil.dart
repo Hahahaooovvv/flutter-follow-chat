@@ -5,12 +5,19 @@ import 'package:follow/utils/reduxUtil.dart';
 import 'package:sqflite/sqflite.dart';
 
 class SqlUtilTemple {
-  String sqlStr;
-  List<dynamic> dataList;
+  final String sqlStr;
+  final List<dynamic> dataList;
+
+  SqlUtilTemple({this.sqlStr, this.dataList});
+  // List<String> ids;
+}
+
+class SqlUtilTransactionTemple {
+  List<SqlUtilTemple> temple;
   List<String> ids;
 }
 
-enum SqlUtilConfigKey { NEWES_LIST }
+enum SqlUtilConfigKey { NEWES_LIST, CHATING_MSG_LIST }
 
 class SqlLiteUtil {
   static Database dbInstance;
@@ -87,6 +94,8 @@ class SqlLiteUtil {
     switch (enumKey) {
       case SqlUtilConfigKey.NEWES_LIST:
         return "NEWES_LIST";
+      case SqlUtilConfigKey.CHATING_MSG_LIST:
+        return "CHATING_MSG_LIST_$suffix";
       default:
         return "";
     }
@@ -121,13 +130,24 @@ class SqlLiteUtil {
     }).toList();
   }
 
+  /// 批量执行
+  Future<void> transactions(List<SqlUtilTemple> sqlTemples) async {
+    if (sqlTemples.length > 0) {
+      await SqlLiteUtil.dbInstance.transaction((txn) async {
+        await Future.forEach<SqlUtilTemple>(sqlTemples, (element) async {
+          await txn.rawInsert(element.sqlStr, element.dataList);
+        });
+      });
+    }
+  }
+
   /// 获取插入语句
-  SqlUtilTemple getInsertDbTStr<T>(List<T> list, {String tableName, String Function(T item) mapIds}) {
+  SqlUtilTransactionTemple getInsertDbTStr<T>(List<T> list, {String tableName, String Function(T item) mapIds}) {
     tableName ??= getTableNameFromListType(list);
-    String strSql = "";
     List<String> ids = mapIds == null ? null : [];
-    List<dynamic> data = [];
+    List<SqlUtilTemple> _lists = [];
     list.forEach((element) {
+      List<dynamic> data = [];
       String keys = "";
       String values = "";
       var _json = (element as dynamic).toJson();
@@ -141,12 +161,11 @@ class SqlLiteUtil {
       if (mapIds != null) {
         ids.add(mapIds(element));
       }
-      strSql += "INSERT INTO $tableName($keys) VALUES($values);";
+      _lists.add(SqlUtilTemple(sqlStr: "INSERT INTO $tableName($keys) VALUES($values);", dataList: data));
     });
-    return SqlUtilTemple()
+    return SqlUtilTransactionTemple()
       ..ids = ids
-      ..dataList = data
-      ..sqlStr = strSql;
+      ..temple = _lists;
   }
 
   /// 获取List

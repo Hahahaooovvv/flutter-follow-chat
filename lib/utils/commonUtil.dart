@@ -12,7 +12,7 @@ import 'package:follow/utils/routerUtil.dart';
 import 'package:follow/utils/sqlLiteUtil.dart';
 import 'package:one_context/one_context.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:vibrate/vibrate.dart';
+import 'package:vibration/vibration.dart';
 
 class CommonUtil {
   static OneContext get oneContext => _getContext();
@@ -24,7 +24,9 @@ class CommonUtil {
 
   /// 震动
   static vibrate() async {
-    if (await Vibrate.canVibrate) Vibrate.vibrateWithPauses([Duration(milliseconds: 500)]);
+    if (await Vibration.hasVibrator()) {
+      Vibration.vibrate(duration: 100);
+    }
   }
 
   /// 初始化数据
@@ -45,7 +47,6 @@ class CommonUtil {
         FriendHelper().getFriendList();
         // MessageUtil.cacheToRedux();
         RouterUtil.replace(context, BottomNavigationBarPage());
-
       }
       return value == null ? false : true;
     });
@@ -53,6 +54,7 @@ class CommonUtil {
 
   /// 等待组件渲染完成回调
   static whenRenderEnd(Function(Duration duration) func) {
+    // WidgetsBinding.instance.addPersistentFrameCallback(func);
     WidgetsBinding.instance.addPostFrameCallback(func);
   }
 

@@ -8,6 +8,8 @@ import 'package:follow/utils/reduxUtil.dart';
 class EntityChatMessageExtend {
   /// 图片 或者视屏的宽和高
   Size size;
+  int duration;
+  EntityChatMessageExtend({this.size, this.duration});
 }
 
 /// 聊天消息实体

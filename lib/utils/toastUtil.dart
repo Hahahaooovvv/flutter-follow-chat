@@ -56,7 +56,7 @@ class ToastUtil {
               child: Container(
                 child: Text(
                   "$msg",
-                  style: TextStyle(color: Colors.white,fontSize: 13.setSp()),
+                  style: TextStyle(color: Colors.white, fontSize: 13.setSp()),
                 ),
                 decoration: BoxDecoration(
                   color: Colors.black.withOpacity(0.6),

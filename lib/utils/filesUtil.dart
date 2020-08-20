@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:follow/entity/notice/EntityChatMessage.dart';
 import 'package:follow/utils/requestUtils.dart';
 
 class MessageStreamController {
@@ -21,9 +22,10 @@ class FileUtil {
     String url: "/api/Member/upload",
     @required String filePath,
     @required int fileType,
+    EntityChatMessageExtend extend,
   }) async {
     // 上传文件
-    return await RequestHelper.fileUpLoad(filePath: filePath, fileType: fileType, url: url).then((value) {
+    return await RequestHelper.fileUpLoad(filePath: filePath, fileType: fileType, url: url, extend: extend).then((value) {
       FileUtil.messageStreamControllers.add(MessageStreamController(id, value.streamController, File(filePath)));
       return value;
     });

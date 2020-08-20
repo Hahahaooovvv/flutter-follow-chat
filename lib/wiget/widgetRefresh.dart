@@ -42,7 +42,9 @@ class WidgetRefresh extends StatelessWidget {
       onRefresh: method == null
           ? null
           : () async {
-              await this.method();
+              try {
+                await this.method();
+              } catch (e) {}
             },
       firstRefresh: this.firstRefresh,
       emptyWidget: this.empty ? WidgetEmptyComponent() : null,
