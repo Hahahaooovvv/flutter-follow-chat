@@ -4,6 +4,7 @@ import 'package:follow/apis/memberApi.dart';
 import 'package:follow/entity/apis/entityFriendApi.dart';
 import 'package:follow/helper/memberHelper.dart';
 import 'package:follow/pages/friend/addFriends.dart';
+import 'package:follow/pages/member/memberSetting.dart';
 import 'package:follow/utils/chatMessageUtil.dart';
 import 'package:follow/utils/commonUtil.dart';
 import 'package:follow/utils/extensionUtil.dart';
@@ -288,7 +289,14 @@ class _MemnerInfoPageState extends State<MemnerInfoPage> {
           ),
           AppBar(
             backgroundColor: Colors.transparent,
-            // actions: [IconButton(icon: Icon(Icons.settings), onPressed: () {})],
+            actions: [
+              if (isMe)
+                IconButton(
+                    icon: Icon(Icons.settings),
+                    onPressed: () {
+                      RouterUtil.push(context, MemberSettingPage());
+                    })
+            ],
           ).containerExtension(height: kToolbarHeight + MediaQuery.of(context).padding.top),
         ],
       ),

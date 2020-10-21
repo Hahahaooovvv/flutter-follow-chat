@@ -33,6 +33,16 @@ class ChatMessageUtil {
     RouterUtil.push(context, ChatRoomCommonPage(sessionId: sessionId, isGroup: 0));
   }
 
+  /// 结束聊天时情务必调用这个方法
+  void endChat() async {
+    var _sessionId = ReduxUtil.store.state.chatingSessionId;
+    MemberApi().isRead(_sessionId);
+    await SqlLiteUtil.dbInstance.execute("update chat_msg set isRead=1 where sessionId=?", [_sessionId]);
+    ReduxUtil.dispatch(ReduxActions.ROOM_MESSAGE, <EntityChatMessage>[]);
+    ReduxUtil.dispatch(ReduxActions.CHAT_SESSION_ID, null);
+    this.cacheNewesMessageFromDBToReudx();
+  }
+
   /// 本地加载更多消息
   Future<void> loadMoreChatingMsgs({String sessionId, int limit, int offset}) async {
     ReduxStore state = ReduxUtil.store.state;
@@ -55,15 +65,8 @@ class ChatMessageUtil {
     return _list;
   }
 
-  void endChat() async {
-    var _sessionId = ReduxUtil.store.state.chatingSessionId;
-    MemberApi().isRead(_sessionId);
-    await SqlLiteUtil.dbInstance.execute("update chat_msg set isRead=1 where sessionId=?", [_sessionId]);
-    ReduxUtil.dispatch(ReduxActions.ROOM_MESSAGE, <EntityChatMessage>[]);
-    ReduxUtil.dispatch(ReduxActions.CHAT_SESSION_ID, null);
-    this.cacheNewesMessageFromDBToReudx();
-  }
 
+  /// 缓存信息到DB和redux
   Future<List<EntityNewesMessage>> cacheNewesMessageFromDBToReudx() async {
     List<EntityNewesMessage> _list = [];
     var select = await SqlLiteUtil.dbInstance.rawQuery('''

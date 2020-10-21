@@ -1,7 +1,13 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:follow/helper/memberHelper.dart';
+import 'package:follow/pages/member/getPassword.dart';
+import 'package:follow/pages/member/signUp.dart';
+import 'package:follow/utils/commonUtil.dart';
 import 'package:follow/utils/extensionUtil.dart';
+import 'package:follow/utils/routerUtil.dart';
 import 'package:follow/wiget/widgetButton.dart';
 import 'package:follow/wiget/widgetInput.dart';
 
@@ -16,6 +22,7 @@ class _SignInPageState extends State<SignInPage> {
   TextEditingController _accoundController = TextEditingController();
   TextEditingController _passwordController = TextEditingController();
   void userLogin() {
+    CommonUtil.closeKeyBord(context);
     // 用户登录
     String accound = _accoundController.text;
     String password = _passwordController.text;
@@ -69,19 +76,19 @@ class _SignInPageState extends State<SignInPage> {
                   ).paddingExtension(EdgeInsets.symmetric(horizontal: 16.setWidth())),
                 ],
               ).flexExtension(),
-              // Container(
-              //   padding: EdgeInsets.only(bottom: max(MediaQuery.of(context).padding.bottom, 8.setHeight())),
-              //   alignment: Alignment.bottomCenter,
-              //   child: FlatButton(
-              //       onPressed: () {
-              //         RouterUtil.push(context, SignUpPage()).then((value) {
-              //           if (value != null) {
-              //             this._accoundController.text = value;
-              //           }
-              //         });
-              //       },
-              //       child: Text("注册账号?", style: TextStyle(color: Color.fromARGB(255, 100, 142, 247), fontSize: 14.setSp(), fontWeight: FontWeight.bold))),
-              // )
+              Container(
+                padding: EdgeInsets.only(bottom: max(MediaQuery.of(context).padding.bottom, 8.setHeight())),
+                alignment: Alignment.bottomCenter,
+                child: FlatButton(
+                    onPressed: () {
+                      RouterUtil.push(context, GetPasswordPage()).then((value) {
+                        if (value != null) {
+                          this._accoundController.text = value;
+                        }
+                      });
+                    },
+                    child: Text("找回密码", style: TextStyle(color: Color.fromARGB(255, 100, 142, 247), fontSize: 14.setSp(), fontWeight: FontWeight.bold))),
+              )
             ],
           ),
           AppBar(

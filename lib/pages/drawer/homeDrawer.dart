@@ -6,6 +6,7 @@ import 'package:follow/entity/apis/entityFriendApi.dart';
 import 'package:follow/entity/apis/entityMemberApi.dart';
 import 'package:follow/helper/memberHelper.dart';
 import 'package:follow/pages/member/memberInfo.dart';
+import 'package:follow/pages/member/signature.dart';
 import 'package:follow/pages/notice/notice.dart';
 import 'package:follow/redux.dart';
 import 'package:follow/utils/extensionUtil.dart';
@@ -67,7 +68,9 @@ class _HomeDrawerState extends State<HomeDrawer> {
                               if (memberInfo.signature == null) Icon(Icons.edit, size: 16.setSp(), color: Colors.white).paddingExtension(EdgeInsets.only(right: 4.setWidth())),
                               Text(memberInfo.signature ?? "来写两句签名", style: TextStyle(fontSize: 12.setSp(), color: Colors.white), maxLines: 2).flexExtension(),
                             ],
-                          )
+                          ).tapExtension(() {
+                            RouterUtil.push(context, SignaturePage());
+                          })
                         ],
                       ).paddingExtension(EdgeInsets.only(left: 12.setWidth())).flexExtension(),
                     ],

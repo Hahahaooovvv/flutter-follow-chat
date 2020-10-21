@@ -104,7 +104,6 @@ class _ChatRoomCommonPageState extends State<ChatRoomCommonPage> with SingleTick
     return Scaffold(
       appBar: AppBar(
         title: Text(this.nickName ?? ""),
-        centerTitle: false,
       ),
       body: StoreConnector<ReduxStore, List<EntityChatMessage>>(
         onWillChange: (_old, _new) {

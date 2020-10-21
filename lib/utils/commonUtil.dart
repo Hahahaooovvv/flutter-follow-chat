@@ -88,14 +88,8 @@ class CommonUtil {
   }
 
   static String randomString([length = 32]) {
+    Random random = Random();
     String alphabet = 'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM';
-    int strlenght = length;
-
-    /// 生成的字符串固定长度
-    String left = '';
-    for (var i = 0; i < strlenght; i++) {
-      left = left + alphabet[Random().nextInt(alphabet.length)];
-    }
-    return left;
+    return List<String>.generate(length, (index) => alphabet[random.nextInt(alphabet.length)]).toList().join();
   }
 }

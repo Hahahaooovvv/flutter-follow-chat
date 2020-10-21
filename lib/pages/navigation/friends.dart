@@ -10,6 +10,21 @@ import 'package:follow/wiget/widgetAppbar.dart';
 import 'package:follow/wiget/widgetAvatar.dart';
 import 'package:follow/wiget/widgetRefresh.dart';
 
+class CommonResponse<T> {
+  int code;
+  T data;
+  String message;
+}
+
+class PageResponse<T>{
+
+  int total;
+}
+
+
+
+
+
 class FrindsPage extends StatefulWidget {
   FrindsPage({Key key}) : super(key: key);
 
@@ -23,6 +38,7 @@ class _FrindsPageState extends State<FrindsPage> with SingleTickerProviderStateM
     super.initState();
     FriendHelper().getFriendList();
   }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);

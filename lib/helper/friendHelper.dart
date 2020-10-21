@@ -11,6 +11,7 @@ import 'package:follow/utils/extensionUtil.dart';
 import 'package:follow/utils/reduxUtil.dart';
 import 'package:follow/utils/sqlLiteUtil.dart';
 
+
 class FriendHelper {
   /// 获取好友列表
   Future<void> getFriendList() async {
